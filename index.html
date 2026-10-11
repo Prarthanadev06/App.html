@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AutoVault - Car Catalog & Vision AI Scanner</title>
+  <title>AutoVault - Car Catalog & Gallery Recognition</title>
   
   <!-- Include HTML5-QRCode Library -->
   <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
@@ -64,7 +64,7 @@
       width: 100%;
     }
 
-    /* Scanner & Vision Container */
+    /* Scanner & Gallery Container */
     #reader {
       width: 100%;
       border-radius: 12px;
@@ -97,7 +97,7 @@
 
     /* Forms */
     form { display: flex; flex-direction: column; gap: 12px; background: var(--card-bg); padding: 20px; border-radius: 12px; border: 1px solid #334155; }
-    input, textarea {
+    input, textarea, select {
       padding: 12px;
       border-radius: 8px;
       border: 1px solid #475569;
@@ -176,22 +176,30 @@
       <div id="carGrid" class="car-grid"></div>
     </div>
 
-    <!-- SCANNER & GALLERY UPLOAD SECTION -->
+    <!-- SCANNER & GALLERY MATCHING SECTION -->
     <div id="scannerSection" class="section">
-      <p style="text-align:center; color: var(--subtext);">Scan a QR code or upload a car photo from your gallery:</p>
+      <p style="text-align:center; color: var(--subtext);">Scan a QR code or upload a car image from your gallery:</p>
       
       <!-- QR Camera Reader -->
       <div id="reader"></div>
 
-      <!-- Gallery Image Upload Box -->
+      <!-- Gallery Image Upload Box with Model Selector for 100% Match Accuracy -->
       <div class="vision-box">
         <h3 style="margin:0 0 5px 0; color:var(--text);">📁 Upload Car Photo from Gallery</h3>
-        <p style="font-size:0.85rem; color:var(--subtext); margin:0;">Select any car image to instantly pull up specs</p>
+        <p style="font-size:0.85rem; color:var(--subtext); margin:8px 0 12px 0;">Select matching car model so name & color match perfectly:</p>
+        
+        <select id="carMatchSelect" style="width:100%; margin-bottom:10px;">
+          <option value="TESLA_MODEL_S">Tesla Model S Plaid (Crimson Red)</option>
+          <option value="PORSCHE_911">Porsche 911 GT3 (Lizard Green)</option>
+          <option value="LAMBORGHINI_HURACAN">Lamborghini Huracán STO (Verde Mantis)</option>
+          <option value="AUDI_R8">Audi R8 V10 Performance (Daytona Gray)</option>
+        </select>
+
         <label class="upload-label">
-          Choose from Gallery
+          Upload Photo & Match Info
           <input type="file" id="carImageInput" accept="image/*" onchange="handleGalleryUpload(event)">
         </label>
-        <div id="aiStatus" class="loading-status">Gallery Scanner Ready</div>
+        <div id="aiStatus" class="loading-status">Ready for Upload</div>
       </div>
     </div>
 
@@ -233,7 +241,7 @@
   </nav>
 
   <script>
-    // Complete Default Cars Database with strict valid keys
+    // Complete Default Cars Database
     const defaultCars = {
       "TESLA_MODEL_S": {
         id: "TESLA_MODEL_S",
@@ -277,7 +285,6 @@
 
     function getAllCars() {
       let savedCars = JSON.parse(localStorage.getItem("all_vault_cars") || "null");
-      // Force reset local storage if old corrupted/undefined schema exists
       if (!savedCars || !savedCars["TESLA_MODEL_S"] || !savedCars["TESLA_MODEL_S"].name) {
         localStorage.setItem("all_vault_cars", JSON.stringify(defaultCars));
         return defaultCars;
@@ -290,8 +297,19 @@
       const grid = document.getElementById("carGrid");
       grid.innerHTML = "";
 
-      const carEntries = Object.values(cars);
-      carEntries.forEach(car => {
+      // Populate dropdown dynamically too
+      const selectEl = document.getElementById("carMatchSelect");
+      if (selectEl) {
+        selectEl.innerHTML = "";
+        Object.values(cars).forEach(car => {
+          const opt = document.createElement("option");
+          opt.value = car.id;
+          opt.innerText = `${car.name} (${car.color})`;
+          selectEl.appendChild(opt);
+        });
+      }
+
+      Object.values(cars).forEach(car => {
         const card = document.createElement("div");
         card.className = "car-card";
         card.innerHTML = `
@@ -408,25 +426,28 @@
       showModal(carData);
     }
 
-    // Handle Gallery Image Upload & Instant Info Lookup
+    // Handle Gallery Upload with Perfect Name & Color Matching
     function handleGalleryUpload(event) {
       const file = event.target.files[0];
       if (!file) return;
 
       const objectUrl = URL.createObjectURL(file);
+      const selectedId = document.getElementById("carMatchSelect").value;
       const cars = getAllCars();
-      const carKeys = Object.keys(cars);
       
-      // Pick a car from the catalog to display specs alongside the uploaded photo
-      // (If you have custom cars, it will cycle through them based on file size/time)
-      const selectedKey = carKeys[Math.floor(Math.random() * carKeys.length)];
-      let matchedCar = { ...cars[selectedKey] };
+      let matchedCar = cars[selectedId] ? { ...cars[selectedId] } : {
+        name: "Custom Vehicle",
+        color: "Custom Finish",
+        hp: "500 hp",
+        speed: "180 mph",
+        specs: "Uploaded gallery record",
+        img: objectUrl
+      };
 
-      // Override image with the user's uploaded gallery photo preview
+      // Set the image to your uploaded picture while keeping exact matching name & color
       matchedCar.img = objectUrl;
-      matchedCar.name = "Custom Uploaded " + matchedCar.name;
 
-      document.getElementById("aiStatus").innerText = "Photo Loaded Successfully!";
+      document.getElementById("aiStatus").innerText = "Successfully Matched!";
       showModal(matchedCar);
     }
 
@@ -435,7 +456,7 @@
       document.getElementById("modalColor").innerText = carData.color || "Custom Finish";
       document.getElementById("modalHp").innerText = carData.hp || "500+ hp";
       document.getElementById("modalSpeed").innerText = carData.speed || "180 mph";
-      document.getElementById("modalSpecs").innerText = carData.specs || "Custom uploaded vehicle entry";
+      document.getElementById("modalSpecs").innerText = carData.specs || "Vehicle record details";
       document.getElementById("modalImage").src = carData.img || "https://via.placeholder.com/400x200?text=Car";
       
       document.getElementById("carModal").style.display = "flex";
@@ -449,8 +470,6 @@
     }
 
     window.addEventListener("DOMContentLoaded", () => {
-      // Clear out bad cached data immediately
-      localStorage.removeItem("custom_cars");
       renderCatalog();
     });
   </script>
