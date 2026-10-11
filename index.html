@@ -406,7 +406,7 @@
     }
 
     // =========================================================================
-    // UPLOAD & AI RECOGNITION SECTION (Updated with Yellow Audi & White BMW)
+    // UPLOAD & AI RECOGNITION SECTION (Configured for Yellow Audi S4 & White BMW M8)
     // =========================================================================
     function autoRecognizeCar(event) {
       const file = event.target.files[0];
@@ -425,41 +425,41 @@
         ctx.drawImage(img, 0, 0, 40, 40);
 
         const pData = ctx.getImageData(0, 0, 40, 40).data;
-        let yellowAudiPixels = 0, darkPixels = 0, whiteBmwPixels = 0, cyanPixels = 0;
+        let yellowPixels = 0, darkPixels = 0, whitePixels = 0, cyanPixels = 0;
 
         for (let i = 0; i < pData.length; i += 4) {
           const r = pData[i];
           const g = pData[i+1];
           const b = pData[i+2];
 
-          // 1. Yellow Audi check
+          // 1. Yellow Audi S4 pixel check (Strict yellow profile mapping to avoid false triggers)
           if (r > 130 && g > 100 && b < 90) {
-            yellowAudiPixels++;
+            yellowPixels++;
           }
           // 2. Rolls-Royce (Midnight Black) - Untouched
           else if (r < 50 && g < 50 && b < 50) {
             darkPixels++;
           }
-          // 3. Cyan Mercedes - Untouched
+          // 3. Mercedes Cyan - Untouched
           else if (b > r + 10 && g > r - 10) {
             cyanPixels++;
           }
-          // 4. White BMW check
+          // 4. White BMW M8 pixel check
           else if (r > 160 && g > 160 && b > 160) {
-            whiteBmwPixels++;
+            whitePixels++;
           }
         }
 
         let detectedType = "AUDI_YELLOW";
-        const maxPixels = Math.max(yellowAudiPixels, darkPixels, whiteBmwPixels, cyanPixels);
+        const maxPixels = Math.max(yellowPixels, darkPixels, whitePixels, cyanPixels);
 
-        if (maxPixels === yellowAudiPixels) {
+        if (maxPixels === yellowPixels) {
           detectedType = "AUDI_YELLOW";
         } else if (maxPixels === darkPixels) {
           detectedType = "RR";
         } else if (maxPixels === cyanPixels) {
           detectedType = "MERCEDES_CYAN";
-        } else if (maxPixels === whiteBmwPixels) {
+        } else if (maxPixels === whitePixels) {
           detectedType = "BMW_WHITE";
         }
 
