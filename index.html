@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AutoVault - Car Catalog & Smart Gallery Recognition</title>
+  <title>AutoVault - Car Catalog & Gallery Recognition</title>
   
   <!-- Include HTML5-QRCode Library -->
   <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
@@ -176,23 +176,33 @@
       <div id="carGrid" class="car-grid"></div>
     </div>
 
-    <!-- SCANNER & SMART GALLERY SECTION -->
+    <!-- SCANNER & GALLERY SECTION -->
     <div id="scannerSection" class="section">
       <p style="text-align:center; color: var(--subtext);">Scan a QR code or upload any car image from your gallery:</p>
       
       <!-- QR Camera Reader -->
       <div id="reader"></div>
 
-      <!-- Smart Gallery Image Upload Box -->
+      <!-- Gallery Upload Box with Precise Car Model Selector -->
       <div class="vision-box">
-        <h3 style="margin:0 0 5px 0; color:var(--text);">📁 Smart Gallery Upload</h3>
-        <p style="font-size:0.85rem; color:var(--subtext); margin:8px 0 12px 0;">Upload any car photo—AutoVault will match its exact color and name automatically!</p>
+        <h3 style="margin:0 0 5px 0; color:var(--text);">📁 Gallery Upload & Match</h3>
+        <p style="font-size:0.85rem; color:var(--subtext); margin:8px 0 6px 0;">Select the matching car model first, then upload your photo:</p>
         
+        <select id="carMatchSelect" style="width:100%; margin-bottom:10px;">
+          <option value="MERCEDES_AMG_GT">Mercedes-AMG GT S (Daytona Gray / Silver)</option>
+          <option value="BMW_M4">BMW M4 Competition (Isle of Man Green)</option>
+          <option value="FERRARI_F8">Ferrari F8 Tributo (Rosso Corsa Red)</option>
+          <option value="PORSCHE_911">Porsche 911 GT3 (Carrara White)</option>
+          <option value="LAMBORGHINI_HURACAN">Lamborghini Huracán STO (Bianco White)</option>
+          <option value="TESLA_MODEL_S">Tesla Model S Plaid (Pearl White)</option>
+          <option value="AUDI_R8">Audi R8 V10 Performance (Daytona Gray)</option>
+        </select>
+
         <label class="upload-label">
-          Upload Car Photo
-          <input type="file" id="carImageInput" accept="image/*" onchange="handleSmartGalleryUpload(event)">
+          Upload Photo & Match Info
+          <input type="file" id="carImageInput" accept="image/*" onchange="handleExactGalleryUpload(event)">
         </label>
-        <div id="aiStatus" class="loading-status">Ready to Analyze</div>
+        <div id="aiStatus" class="loading-status">Ready</div>
       </div>
     </div>
 
@@ -234,7 +244,6 @@
   </nav>
 
   <script>
-    // Expanded Default Cars Catalog with Accurate Colors Matching the Images
     const defaultCars = {
       "TESLA_MODEL_S": {
         id: "TESLA_MODEL_S",
@@ -293,7 +302,7 @@
       "MERCEDES_AMG_GT": {
         id: "MERCEDES_AMG_GT",
         name: "Mercedes-AMG GT S",
-        color: "Solarbeam Yellow",
+        color: "Daytona Gray / Silver",
         hp: "515 hp",
         speed: "193 mph",
         specs: "4.0L V8 Biturbo high-performance coupe",
@@ -304,9 +313,8 @@
     let html5QrCode = null;
 
     function getAllCars() {
-      // Force reset local storage on this version so old mismatched color text is cleared
       let savedCars = JSON.parse(localStorage.getItem("all_vault_cars") || "null");
-      if (!savedCars || !savedCars["TESLA_MODEL_S"] || savedCars["TESLA_MODEL_S"].color.includes("Crimson")) {
+      if (!savedCars || !savedCars["MERCEDES_AMG_GT"] || !savedCars["MERCEDES_AMG_GT"].color.includes("Gray")) {
         localStorage.setItem("all_vault_cars", JSON.stringify(defaultCars));
         return defaultCars;
       }
@@ -349,7 +357,7 @@
       } else if (tab === 'scanner') {
         document.getElementById('scannerSection').classList.add('active');
         document.getElementById('navScanner').classList.add('active');
-        document.getElementById('headerTitle').innerText = "📷 QR & Smart Gallery Scanner";
+        document.getElementById('headerTitle').innerText = "📷 QR & Gallery Scanner";
         startScanner();
       } else if (tab === 'manage') {
         document.getElementById('manageSection').classList.add('active');
@@ -431,65 +439,28 @@
       showModal(carData);
     }
 
-    function handleSmartGalleryUpload(event) {
+    function handleExactGalleryUpload(event) {
       const file = event.target.files[0];
       if (!file) return;
 
       const objectUrl = URL.createObjectURL(file);
-      document.getElementById("aiStatus").innerText = "Analyzing image pixels & matching color...";
-
-      const img = new Image();
-      img.src = objectUrl;
-      img.onload = () => {
-        const canvas = document.createElement("canvas");
-        const ctx = canvas.getContext("2d");
-        canvas.width = 60;
-        canvas.height = 60;
-        ctx.drawImage(img, 0, 0, 60, 60);
-
-        const pData = ctx.getImageData(10, 10, 40, 40).data;
-        let r = 0, g = 0, b = 0, count = 0;
-        for (let i = 0; i < pData.length; i += 4) {
-          r += pData[i];
-          g += pData[i+1];
-          b += pData[i+2];
-          count++;
-        }
-        r = Math.floor(r / count);
-        g = Math.floor(g / count);
-        b = Math.floor(b / count);
-
-        const cars = getAllCars();
-        let matchedKey = "MERCEDES_AMG_GT";
-        let detectedColorName = "Solarbeam Yellow";
-
-        if (r > 160 && g < 90 && b < 90) {
-          detectedColorName = "Rosso Corsa Red";
-          matchedKey = "FERRARI_F8";
-        } else if (r > 160 && g > 130 && b < 70) {
-          detectedColorName = "Solarbeam Yellow";
-          matchedKey = "MERCEDES_AMG_GT";
-        } else if (g > r && g > b + 10) {
-          detectedColorName = "Isle of Man Green";
-          matchedKey = "BMW_M4";
-        } else if (b > r + 15 && b > g) {
-          detectedColorName = "Verde Mantis Blue";
-          matchedKey = "LAMBORGHINI_HURACAN";
-        } else if (r < 90 && g < 90 && b < 90) {
-          detectedColorName = "Daytona Gray";
-          matchedKey = "AUDI_R8";
-        } else if (r > 180 && g > 180 && b > 180) {
-          detectedColorName = "Carrara White Metallic";
-          matchedKey = "PORSCHE_911";
-        }
-
-        let matchedCar = { ...cars[matchedKey] };
-        matchedCar.img = objectUrl;
-        matchedCar.color = detectedColorName;
-
-        document.getElementById("aiStatus").innerText = "Match Found Successfully!";
-        showModal(matchedCar);
+      const selectedId = document.getElementById("carMatchSelect").value;
+      const cars = getAllCars();
+      
+      let matchedCar = cars[selectedId] ? { ...cars[selectedId] } : {
+        name: "Custom Vehicle",
+        color: "Custom Finish",
+        hp: "500 hp",
+        speed: "180 mph",
+        specs: "Uploaded gallery record",
+        img: objectUrl
       };
+
+      // Set image to the user's uploaded gallery photo while keeping the exact matching name & color
+      matchedCar.img = objectUrl;
+
+      document.getElementById("aiStatus").innerText = "Matched Successfully!";
+      showModal(matchedCar);
     }
 
     function showModal(carData) {
