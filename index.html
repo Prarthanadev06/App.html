@@ -406,12 +406,7 @@
     }
 
     // =========================================================================
-    // UPLOAD & AI RECOGNITION SECTION (All 5 Cars Mapped via Pixel Logic)
-    // - Red/Maroon -> Audi (Maroon)
-    // - Black/Dark -> Rolls-Royce (Midnight Black)
-    // - Cyan/Blue -> Mercedes (Cyan Light Blue)
-    // - Yellow -> Mercedes (Yellow)
-    // - White -> BMW (Alpine White)
+    // UPLOAD & AI RECOGNITION SECTION (Fixed Red Audi & Yellow Mercedes info)
     // =========================================================================
     function autoRecognizeCar(event) {
       const file = event.target.files[0];
@@ -478,32 +473,52 @@
         let matchedKey = "AUDI_R8";
         let matchedCar = {};
 
-        // Switch statement mapping detected type to upload name and user-specified colors
+        // Switch statement mapping detected type to correct upload name and properly populated info
         switch (detectedType) {
           case "AUDI":
             matchedKey = "AUDI_R8";
             matchedCar = { ...cars[matchedKey] };
-            matchedCar.color = "Maroon"; // Audi
+            matchedCar.name = "Audi R8 V10 Performance";
+            matchedCar.color = "Maroon";
+            matchedCar.hp = "602 hp";
+            matchedCar.speed = "205 mph";
+            matchedCar.specs = "Naturally aspirated V10 with Quattro AWD";
             break;
           case "RR":
             matchedKey = "ROLLS_ROYCE_WHITE";
             matchedCar = { ...cars[matchedKey] };
-            matchedCar.color = "Midnight Black"; // Rolls-Royce
+            matchedCar.name = "Rolls-Royce Wraith";
+            matchedCar.color = "Midnight Black";
+            matchedCar.hp = "624 hp";
+            matchedCar.speed = "155 mph";
+            matchedCar.specs = "6.6L Twin-Turbo V12 luxury coupe";
             break;
           case "MERCEDES_CYAN":
             matchedKey = "MERCEDES_CYAN";
             matchedCar = { ...cars[matchedKey] };
-            matchedCar.color = "Cyan Light Blue"; // Cyan Mercedes
+            matchedCar.name = "Mercedes-AMG GT Black Series";
+            matchedCar.color = "Cyan Light Blue";
+            matchedCar.hp = "720 hp";
+            matchedCar.speed = "202 mph";
+            matchedCar.specs = "4.0L V8 Biturbo track-tuned aero package";
             break;
           case "MERCEDES_YELLOW":
             matchedKey = "MERCEDES_CYAN";
             matchedCar = { ...cars[matchedKey] };
-            matchedCar.color = "Yellow"; // Yellow Mercedes
+            matchedCar.name = "Mercedes-AMG GT S";
+            matchedCar.color = "Yellow";
+            matchedCar.hp = "515 hp";
+            matchedCar.speed = "193 mph";
+            matchedCar.specs = "4.0L V8 Biturbo high-performance coupe";
             break;
           case "BMW":
             matchedKey = "BMW_M8";
             matchedCar = { ...cars[matchedKey] };
-            matchedCar.color = "Alpine White"; // BMW
+            matchedCar.name = "BMW M8 Competition Coupe";
+            matchedCar.color = "Alpine White";
+            matchedCar.hp = "617 hp";
+            matchedCar.speed = "190 mph";
+            matchedCar.specs = "4.4L BMW M TwinPower Turbo V8 engine";
             break;
           default:
             matchedKey = "AUDI_R8";
