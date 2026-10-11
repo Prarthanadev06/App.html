@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AutoVault - Smart Auto Image Recognition</title>
+  <title>AutoVault - Accurate Car Gallery Upload</title>
   
   <!-- Include HTML5-QRCode Library -->
   <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
@@ -64,7 +64,7 @@
       width: 100%;
     }
 
-    /* Scanner & Gallery Container */
+    /* Scanner & Upload Container */
     #reader {
       width: 100%;
       border-radius: 12px;
@@ -160,7 +160,6 @@
       gap: 4px;
     }
     nav button.active { color: var(--accent); font-weight: bold; }
-    .loading-status { color: var(--accent); font-size: 0.9rem; margin-top: 8px; }
   </style>
 </head>
 <body>
@@ -176,23 +175,22 @@
       <div id="carGrid" class="car-grid"></div>
     </div>
 
-    <!-- SCANNER & AUTOMATIC GALLERY SECTION -->
+    <!-- SCANNER & GALLERY SECTION -->
     <div id="scannerSection" class="section">
       <p style="text-align:center; color: var(--subtext);">Scan a QR code or upload any car image from your gallery:</p>
       
       <!-- QR Camera Reader -->
       <div id="reader"></div>
 
-      <!-- Pure Automatic Upload Box -->
+      <!-- Gallery Upload Box -->
       <div class="vision-box">
         <h3 style="margin:0 0 5px 0; color:var(--text);">📁 Upload Car Image</h3>
-        <p style="font-size:0.85rem; color:var(--subtext); margin:8px 0 12px 0;">Upload any photo—the app automatically detects the color and provides accurate car specs!</p>
+        <p style="font-size:0.85rem; color:var(--subtext); margin:8px 0 12px 0;">Upload any photo from your gallery, then fill in its exact name and color!</p>
         
         <label class="upload-label">
-          Choose Image from Gallery
-          <input type="file" id="carImageInput" accept="image/*" onchange="processImageFromGallery(event)">
+          Choose Car Image
+          <input type="file" id="carImageInput" accept="image/*" onchange="handleImageFormPrompt(event)">
         </label>
-        <div id="aiStatus" class="loading-status">Ready</div>
       </div>
     </div>
 
@@ -213,16 +211,21 @@
 
   </div>
 
-  <!-- Modal Popup for Car Details -->
+  <!-- Modal Popup for Car Details / Custom Input Form -->
   <div id="carModal" class="modal">
     <div class="modal-content">
       <img id="modalImage" src="" alt="Car Image">
-      <h2 id="modalTitle" style="color:var(--accent); margin:5px 0;"></h2>
-      <p style="text-align:left;"><strong>Color:</strong> <span id="modalColor"></span></p>
-      <p style="text-align:left;"><strong>Horsepower:</strong> <span id="modalHp"></span></p>
-      <p style="text-align:left;"><strong>Top Speed:</strong> <span id="modalSpeed"></span></p>
-      <p style="text-align:left;"><strong>Specs:</strong> <span id="modalSpecs"></span></p>
-      <button class="submit-btn" style="width:100%; margin-top:15px;" onclick="closeModal()">Scan Another</button>
+      <h3 style="color:var(--accent); margin:5px 0;">Enter Correct Car Details</h3>
+      <form id="uploadDetailForm" onsubmit="saveUploadedCar(event)" style="background:none; border:none; padding:0; gap:8px; margin-top:10px;">
+        <input type="hidden" id="tempImageUrl">
+        <input type="text" id="uploadCarName" placeholder="Correct Car Name" required>
+        <input type="text" id="uploadCarColor" placeholder="Correct Color Name" required>
+        <input type="text" id="uploadCarHp" placeholder="Horsepower (e.g. 399 hp)" required>
+        <input type="text" id="uploadCarSpeed" placeholder="Top Speed (e.g. 110 mph)" required>
+        <input type="text" id="uploadCarSpecs" placeholder="Specs / Engine Details" required>
+        <button type="submit" class="submit-btn" style="width:100%; margin-top:5px;">Save & View Info</button>
+      </form>
+      <button class="submit-btn" style="background:#475569; color:white; width:100%; margin-top:10px;" onclick="closeModal()">Cancel</button>
     </div>
   </div>
 
@@ -304,7 +307,7 @@
 
     function getAllCars() {
       let savedCars = JSON.parse(localStorage.getItem("all_vault_cars") || "null");
-      if (!savedCars || !savedCars["MERCEDES_AMG_GT"]) {
+      if (!savedCars || !savedCars["TESLA_MODEL_S"]) {
         localStorage.setItem("all_vault_cars", JSON.stringify(defaultCars));
         return defaultCars;
       }
@@ -426,95 +429,73 @@
           return;
         }
       }
-      showModal(carData);
+      showInfoModal(carData);
     }
 
-    // Fully Automated Image Processing Based on User Upload
-    function processImageFromGallery(event) {
+    // When user uploads an image, immediately open a form popup to enter correct details
+    function handleImageFormPrompt(event) {
       const file = event.target.files[0];
       if (!file) return;
 
+      stopScanner();
       const objectUrl = URL.createObjectURL(file);
-      document.getElementById("aiStatus").innerText = "Analyzing image pixels...";
+      document.getElementById("tempImageUrl").value = objectUrl;
+      document.getElementById("modalImage").src = objectUrl;
 
-      const img = new Image();
-      img.src = objectUrl;
-      img.onload = () => {
-        const canvas = document.createElement("canvas");
-        const ctx = canvas.getContext("2d");
-        canvas.width = 60;
-        canvas.height = 60;
-        ctx.drawImage(img, 0, 0, 60, 60);
+      // Reset form fields
+      document.getElementById("uploadCarName").value = "";
+      document.getElementById("uploadCarColor").value = "";
+      document.getElementById("uploadCarHp").value = "";
+      document.getElementById("uploadCarSpeed").value = "";
+      document.getElementById("uploadCarSpecs").value = "";
 
-        const pData = ctx.getImageData(10, 10, 40, 40).data;
-        let r = 0, g = 0, b = 0, count = 0;
-        for (let i = 0; i < pData.length; i += 4) {
-          r += pData[i];
-          g += pData[i+1];
-          b += pData[i+2];
-          count++;
-        }
-        r = Math.floor(r / count);
-        g = Math.floor(g / count);
-        b = Math.floor(b / count);
-
-        const cars = getAllCars();
-        let matchedKey = "MERCEDES_AMG_GT";
-        let detectedColor = "Silver Metallic";
-
-        // Precise color detection mapping to exact matching car records
-        if (r > 150 && g < 80 && b < 80) {
-          detectedColor = "Rosso Corsa Red";
-          matchedKey = "FERRARI_F8";
-        } else if (r > 150 && g > 130 && b < 60) {
-          detectedColor = "Solarbeam Yellow";
-          matchedKey = "MERCEDES_AMG_GT";
-        } else if (g > r && g > b) {
-          detectedColor = "Isle of Man Green";
-          matchedKey = "BMW_M4";
-        } else if (b > r && b > g) {
-          detectedColor = "Verde Mantis Blue";
-          matchedKey = "LAMBORGHINI_HURACAN";
-        } else if (r < 85 && g < 85 && b < 85) {
-          detectedColor = "Daytona Dark Gray";
-          matchedKey = "AUDI_R8";
-        } else if (r > 190 && g > 190 && b > 190) {
-          detectedColor = "Carrara White";
-          matchedKey = "PORSCHE_911";
-        } else {
-          detectedColor = "Titanium Silver";
-          matchedKey = "MERCEDES_AMG_GT";
-        }
-
-        let matchedCar = { ...cars[matchedKey] };
-        matchedCar.img = objectUrl; // use user's uploaded photo preview
-        matchedCar.color = detectedColor; // precise matching color name
-
-        document.getElementById("aiStatus").innerText = "Analysis Complete!";
-        showModal(matchedCar);
-      };
+      // Hide info view if present, show form modal
+      document.getElementById("carModal").style.display = "flex";
     }
 
-    function showModal(carData) {
-      document.getElementById("modalTitle").innerText = carData.name || "Custom Car";
-      document.getElementById("modalColor").innerText = carData.color || "Custom Finish";
-      document.getElementById("modalHp").innerText = carData.hp || "500+ hp";
-      document.getElementById("modalSpeed").innerText = carData.speed || "180 mph";
-      document.getElementById("modalSpecs").innerText = carData.specs || "Vehicle record details";
+    function saveUploadedCar(e) {
+      e.preventDefault();
+      const name = document.getElementById("uploadCarName").value.trim();
+      const color = document.getElementById("uploadCarColor").value.trim();
+      const hp = document.getElementById("uploadCarHp").value.trim();
+      const speed = document.getElementById("uploadCarSpeed").value.trim();
+      const specs = document.getElementById("uploadCarSpecs").value.trim();
+      const img = document.getElementById("tempImageUrl").value;
+
+      const carId = "USER_" + Date.now();
+      const newCar = { id: carId, name, color, hp, speed, specs, img };
+
+      const cars = getAllCars();
+      cars[carId] = newCar;
+      localStorage.setItem("all_vault_cars", JSON.stringify(cars));
+
+      closeModal();
+      switchTab('catalog');
+    }
+
+    function showInfoModal(carData) {
       document.getElementById("modalImage").src = carData.img || "https://via.placeholder.com/400x200?text=Car";
-      
+      // Temporarily swap modal content layout to show card info
+      const content = document.querySelector(".modal-content");
+      content.innerHTML = `
+        <img src="${carData.img}" alt="Car Image" style="width:100%; border-radius:8px; height:180px; object-fit:cover; margin-bottom:12px;">
+        <h2 style="color:var(--accent); margin:5px 0;">${carData.name}</h2>
+        <p style="text-align:left;"><strong>Color:</strong> ${carData.color}</p>
+        <p style="text-align:left;"><strong>Horsepower:</strong> ${carData.hp}</p>
+        <p style="text-align:left;"><strong>Top Speed:</strong> ${carData.speed}</p>
+        <p style="text-align:left;"><strong>Specs:</strong> ${carData.specs}</p>
+        <button class="submit-btn" style="width:100%; margin-top:15px;" onclick="closeModal()">Close / Scan Another</button>
+      `;
       document.getElementById("carModal").style.display = "flex";
     }
 
     function closeModal() {
       document.getElementById("carModal").style.display = "none";
-      if (document.getElementById('scannerSection').classList.contains('active')) {
-        startScanner();
-      }
+      // Restore modal back to form template if needed for next upload
+      location.reload(); 
     }
 
     window.addEventListener("DOMContentLoaded", () => {
-      localStorage.removeItem("all_vault_cars");
       renderCatalog();
     });
   </script>
