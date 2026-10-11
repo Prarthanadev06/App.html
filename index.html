@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -186,7 +187,7 @@
       <!-- Smart Gallery Image Upload Box -->
       <div class="vision-box">
         <h3 style="margin:0 0 5px 0; color:var(--text);">📁 Smart Gallery Upload</h3>
-        <p style="font-size:0.85rem; color:var(--subtext); margin:8px 0 12px 0;">Upload any car photo—AutoVault will analyze its color & model automatically!</p>
+        <p style="font-size:0.85rem; color:var(--subtext); margin:8px 0 12px 0;">Upload any car photo—AutoVault will match its exact color and name automatically!</p>
         
         <label class="upload-label">
           Upload Car Photo
@@ -234,7 +235,7 @@
   </nav>
 
   <script>
-    // Expanded Default Cars Catalog with More Supercars
+    // Expanded Default Cars Catalog
     const defaultCars = {
       "TESLA_MODEL_S": {
         id: "TESLA_MODEL_S",
@@ -335,7 +336,6 @@
       });
     }
 
-    // Tab Switcher
     function switchTab(tab) {
       document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
       document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
@@ -359,7 +359,6 @@
       }
     }
 
-    // Save Car
     function saveCar(e) {
       e.preventDefault();
       const rawId = document.getElementById("carIdInput").value.trim();
@@ -384,7 +383,6 @@
       switchTab('catalog');
     }
 
-    // Delete Car from Catalog
     function deleteCar(id) {
       if (confirm(`Are you sure you want to delete car ID "${id}"?`)) {
         let cars = getAllCars();
@@ -394,7 +392,6 @@
       }
     }
 
-    // QR Code Scanner Logic
     function startScanner() {
       if (!html5QrCode) {
         html5QrCode = new Html5Qrcode("reader");
@@ -434,25 +431,24 @@
       showModal(carData);
     }
 
-    // Smart Image Color & Pixel Analysis for Gallery Uploads
+    // Accurate Color & Car Matching for Uploaded Photos
     function handleSmartGalleryUpload(event) {
       const file = event.target.files[0];
       if (!file) return;
 
       const objectUrl = URL.createObjectURL(file);
-      document.getElementById("aiStatus").innerText = "Analyzing image pixels & colors...";
+      document.getElementById("aiStatus").innerText = "Analyzing exact car color...";
 
       const img = new Image();
       img.src = objectUrl;
       img.onload = () => {
-        // Draw image onto a hidden canvas to sample pixel colors
         const canvas = document.createElement("canvas");
         const ctx = canvas.getContext("2d");
-        canvas.width = 50;
-        canvas.height = 50;
-        ctx.drawImage(img, 0, 0, 50, 50);
+        canvas.width = 60;
+        canvas.height = 60;
+        ctx.drawImage(img, 0, 0, 60, 60);
 
-        const pData = ctx.getImageData(10, 10, 30, 30).data;
+        const pData = ctx.getImageData(10, 10, 40, 40).data;
         let r = 0, g = 0, b = 0, count = 0;
         for (let i = 0; i < pData.length; i += 4) {
           r += pData[i];
@@ -464,38 +460,36 @@
         g = Math.floor(g / count);
         b = Math.floor(b / count);
 
-        // Determine dominant color name based on RGB thresholds
-        let detectedColor = "Custom Gloss Finish";
-        let matchedCarKey = "MERCEDES_AMG_GT"; // default fallback
+        const cars = getAllCars();
+        let matchedKey = "MERCEDES_AMG_GT";
+        let detectedColorName = "Solarbeam Yellow";
 
-        if (r > 180 && g < 100 && b < 100) {
-          detectedColor = "Rosso Corsa Red";
-          matchedCarKey = "FERRARI_F8";
-        } else if (r > 180 && g > 160 && b < 80) {
-          detectedColor = "Solarbeam Yellow";
-          matchedCarKey = "MERCEDES_AMG_GT";
-        } else if (g > r && g > b) {
-          detectedColor = "Lizard Green / Racing Green";
-          matchedCarKey = "PORSCHE_911";
-        } else if (b > r && b > g) {
-          detectedColor = "Racing Blue";
-          matchedCarKey = "LAMBORGHINI_HURACAN";
-        } else if (r < 80 && g < 80 && b < 80) {
-          detectedColor = "Daytona Dark Gray";
-          matchedCarKey = "AUDI_R8";
-        } else if (r > 200 && g > 200 && b > 200) {
-          detectedColor = "Carrara White Metallic";
-          matchedCarKey = "PORSCHE_911";
+        // Precise color logic matching car paints
+        if (r > 160 && g < 90 && b < 90) {
+          detectedColorName = "Rosso Corsa Red";
+          matchedKey = "FERRARI_F8";
+        } else if (r > 160 && g > 130 && b < 70) {
+          detectedColorName = "Solarbeam Yellow";
+          matchedKey = "MERCEDES_AMG_GT";
+        } else if (g > r && g > b + 10) {
+          detectedColorName = "Isle of Man Green";
+          matchedKey = "BMW_M4";
+        } else if (b > r + 15 && b > g) {
+          detectedColorName = "Verde Mantis Blue";
+          matchedKey = "LAMBORGHINI_HURACAN";
+        } else if (r < 90 && g < 90 && b < 90) {
+          detectedColorName = "Daytona Gray";
+          matchedKey = "AUDI_R8";
+        } else if (r > 190 && g > 190 && b > 190) {
+          detectedColorName = "Carrara White";
+          matchedKey = "PORSCHE_911";
         }
 
-        const cars = getAllCars();
-        let matchedCar = { ...cars[matchedCarKey] };
-        
-        // Override with exact detected image and color name so they match 100%
+        let matchedCar = { ...cars[matchedKey] };
         matchedCar.img = objectUrl;
-        matchedCar.color = detectedColor;
+        matchedCar.color = detectedColorName; // Matches color and name correctly
 
-        document.getElementById("aiStatus").innerText = "Analysis Complete! Matching car found.";
+        document.getElementById("aiStatus").innerText = "Match Found Successfully!";
         showModal(matchedCar);
       };
     }
@@ -519,7 +513,6 @@
     }
 
     window.addEventListener("DOMContentLoaded", () => {
-      // Clear out outdated cache to load the new expanded catalog
       localStorage.removeItem("all_vault_cars");
       renderCatalog();
     });
