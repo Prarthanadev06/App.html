@@ -406,7 +406,7 @@
     }
 
     // =========================================================================
-    // UPLOAD & AI RECOGNITION SECTION (Only Audi & Yellow Mercedes modified)
+    // UPLOAD & AI RECOGNITION SECTION (Updated with Yellow Audi & White BMW)
     // =========================================================================
     function autoRecognizeCar(event) {
       const file = event.target.files[0];
@@ -425,48 +425,42 @@
         ctx.drawImage(img, 0, 0, 40, 40);
 
         const pData = ctx.getImageData(0, 0, 40, 40).data;
-        let redPixels = 0, darkPixels = 0, whitePixels = 0, cyanPixels = 0, yellowPixels = 0;
+        let yellowAudiPixels = 0, darkPixels = 0, whiteBmwPixels = 0, cyanPixels = 0;
 
         for (let i = 0; i < pData.length; i += 4) {
           const r = pData[i];
           const g = pData[i+1];
           const b = pData[i+2];
 
-          // 1. Precise Red check for Audi R8 (R > 80, G < 80, B < 80)
-          if (r > 80 && g < 80 && b < 80) {
-            redPixels++;
+          // 1. Yellow Audi check
+          if (r > 130 && g > 100 && b < 90) {
+            yellowAudiPixels++;
           }
-          // 2. Precise Yellow check for Mercedes (R > 130, G > 100, B < 90)
-          else if (r > 130 && g > 100 && b < 90) {
-            yellowPixels++;
-          }
-          // 3. Black/Dark check for Rolls-Royce (Untouched logic)
+          // 2. Rolls-Royce (Midnight Black) - Untouched
           else if (r < 50 && g < 50 && b < 50) {
             darkPixels++;
           }
-          // 4. Cyan check for Mercedes (Untouched logic)
+          // 3. Cyan Mercedes - Untouched
           else if (b > r + 10 && g > r - 10) {
             cyanPixels++;
           }
-          // 5. White check for BMW (Untouched logic)
+          // 4. White BMW check
           else if (r > 160 && g > 160 && b > 160) {
-            whitePixels++;
+            whiteBmwPixels++;
           }
         }
 
-        let detectedType = "AUDI";
-        const maxPixels = Math.max(redPixels, yellowPixels, darkPixels, cyanPixels, whitePixels);
+        let detectedType = "AUDI_YELLOW";
+        const maxPixels = Math.max(yellowAudiPixels, darkPixels, whiteBmwPixels, cyanPixels);
 
-        if (maxPixels === redPixels) {
-          detectedType = "AUDI";
-        } else if (maxPixels === yellowPixels) {
-          detectedType = "MERCEDES_YELLOW";
+        if (maxPixels === yellowAudiPixels) {
+          detectedType = "AUDI_YELLOW";
         } else if (maxPixels === darkPixels) {
           detectedType = "RR";
         } else if (maxPixels === cyanPixels) {
           detectedType = "MERCEDES_CYAN";
-        } else if (maxPixels === whitePixels) {
-          detectedType = "BMW";
+        } else if (maxPixels === whiteBmwPixels) {
+          detectedType = "BMW_WHITE";
         }
 
         const cars = getAllCars();
@@ -474,19 +468,19 @@
         let matchedCar = {};
 
         switch (detectedType) {
-          case "AUDI":
+          case "AUDI_YELLOW":
             matchedKey = "AUDI_R8";
             matchedCar = {
               id: "AUDI_R8",
-              name: "Audi R8 V10 Performance",
-              color: "Maroon Red",
-              hp: "602 hp",
-              speed: "205 mph",
-              specs: "Naturally aspirated 5.2L V10 with Quattro AWD"
+              name: "Audi S4 Sedan",
+              color: "Yellow",
+              hp: "333 hp",
+              speed: "155 mph",
+              specs: "3.0L Supercharged V6 with Quattro AWD"
             };
             break;
           case "RR":
-            matchedKey = "ROLLS_ROYCE_BLACK";
+            matchedKey = "ROLLS_ROYCE_WHITE";
             matchedCar = { ...cars[matchedKey] };
             matchedCar.color = "Midnight Black";
             break;
@@ -495,21 +489,16 @@
             matchedCar = { ...cars[matchedKey] };
             matchedCar.color = "Cyan Light Blue";
             break;
-          case "MERCEDES_YELLOW":
-            matchedKey = "MERCEDES_CYAN";
-            matchedCar = {
-              id: "MERCEDES_CYAN",
-              name: "Mercedes-AMG GT S",
-              color: "Yellow",
-              hp: "515 hp",
-              speed: "193 mph",
-              specs: "4.0L V8 Biturbo high-performance coupe"
-            };
-            break;
-          case "BMW":
+          case "BMW_WHITE":
             matchedKey = "BMW_M8";
-            matchedCar = { ...cars[matchedKey] };
-            matchedCar.color = "Alpine White";
+            matchedCar = {
+              id: "BMW_M8",
+              name: "BMW M8 Competition Coupe",
+              color: "Alpine White",
+              hp: "617 hp",
+              speed: "190 mph",
+              specs: "4.4L BMW M TwinPower Turbo V8 engine"
+            };
             break;
           default:
             matchedKey = "AUDI_R8";
