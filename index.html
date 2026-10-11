@@ -250,27 +250,13 @@
       },
 
       // =========================================================================
-      // CATALOG CAR 2: Rolls-Royce Ghost Black Badge
-      // Highlight Color: WHITE (Updated from Black)
-      // =========================================================================
-      "ROLLS_ROYCE": {
-        id: "ROLLS_ROYCE",
-        name: "Rolls-Royce Ghost Black Badge",
-        color: "Midnight Black",
-        hp: "592 hp",
-        speed: "155 mph",
-        specs: "6.75L Twin-Turbo V12 luxury cruiser",
-        img: "https://images.unsplash.com/photo-1563720223185-11003d516935?w=500"
-      },
-
-      // =========================================================================
-      // CATALOG CAR 3: BMW M8 Competition Coupe
+      // CATALOG CAR 2: BMW M8 Competition Coupe
       // Highlight Color: ALPINE WHITE
       // =========================================================================
       "BMW_M8": {
         id: "BMW_M8",
         name: "BMW M8 Competition Coupe",
-        color: "Alpine White, Blue",
+        color: "Alpine White,Blue",
         hp: "617 hp",
         speed: "190 mph",
         specs: "4.4L BMW M TwinPower Turbo V8 engine",
@@ -278,7 +264,7 @@
       },
 
       // =========================================================================
-      // CATALOG CAR 4: Rolls-Royce Wraith
+      // CATALOG CAR 3: Rolls-Royce Wraith
       // Highlight Color: WHITE
       // =========================================================================
       "ROLLS_ROYCE_WHITE": {
@@ -292,13 +278,13 @@
       },
 
       // =========================================================================
-      // CATALOG CAR 5: Mercedes-AMG GT Black Series
+      // CATALOG CAR 4: Mercedes-AMG GT Black Series
       // Highlight Color: CYAN LIGHT BLUE
       // =========================================================================
       "MERCEDES_CYAN": {
         id: "MERCEDES_CYAN",
         name: "Mercedes-AMG GT Black Series",
-        color: "Cyan Light Blue",
+        color:"Salandrome yellow, Grey",
         hp: "720 hp",
         speed: "202 mph",
         specs: "4.0L V8 Biturbo track-tuned aero package",
@@ -437,10 +423,10 @@
 
     // =========================================================================
     // UPLOAD & AI RECOGNITION SECTION MAPPING LOGIC
-    // Highlight pixel filters mapped to each of the 5 cars:
+    // Highlight pixel filters mapped to each car:
     // - Highlight: ORANGE Pixel Threshold -> AUDI_R8 (Orange)
     // - Highlight: CYAN Pixel Threshold -> MERCEDES_CYAN (Cyan Light Blue)
-    // - Highlight: WHITE Pixel Threshold -> ROLLS_ROYCE / ROLLS_ROYCE_WHITE / BMW_M8 (White)
+    // - Highlight: WHITE Pixel Threshold -> ROLLS_ROYCE_WHITE (White)[span_0](start_span)[span_0](end_span)
     // =========================================================================
     function autoRecognizeCar(event) {
       const file = event.target.files[0];
