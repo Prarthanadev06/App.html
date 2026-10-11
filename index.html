@@ -235,7 +235,7 @@
 
   <script>
     // =========================================================================
-    // CATALOG SECTION (Untouched)
+    // CATALOG SECTION (Untouched as requested)
     // =========================================================================
     const defaultCars = {
       "AUDI_R8": {
@@ -406,12 +406,7 @@
     }
 
     // =========================================================================
-    // UPLOAD & AI RECOGNITION SECTION (Switch Statement & Pixel Logic)
-    // Pixel checking rules:
-    // - Red/Maroon Pixels (>90 Red, <60 Green, <60 Blue) -> Audi R8
-    // - Black/Dark Pixels (<50 Red, <50 Green, <50 Blue) -> Rolls-Royce Wraith
-    // - White/Light Pixels (>160 Red, >160 Green, >160 Blue) -> BMW M8
-    // - Cyan Pixels (Blue > Red + 10, Green > Red - 10) -> Mercedes GT
+    // UPLOAD & AI RECOGNITION SECTION (Switch Statement & Custom Upload Colors)
     // =========================================================================
     function autoRecognizeCar(event) {
       const file = event.target.files[0];
@@ -437,25 +432,24 @@
           const g = pData[i+1];
           const b = pData[i+2];
 
-          // 1. Red or Maroon pixel threshold check (Audi R8)
+          // Red or Maroon pixel check -> Audi R8
           if (r > 90 && g < 60 && b < 60) {
             redPixels++;
           }
-          // 2. Black/Dark pixel threshold check (Rolls-Royce Wraith)
+          // Black/Dark pixel check -> Rolls-Royce
           else if (r < 50 && g < 50 && b < 50) {
             darkPixels++;
           }
-          // 3. White/Light pixel threshold check (BMW M8)
+          // White/Light pixel check -> BMW M8
           else if (r > 160 && g > 160 && b > 160) {
             whitePixels++;
           }
-          // 4. Cyan pixel threshold check (Mercedes GT)
+          // Cyan pixel check -> Mercedes GT
           else if (b > r + 10 && g > r - 10) {
             cyanPixels++;
           }
         }
 
-        // Determine dominant car type based on highest pixel count
         let detectedType = "AUDI";
         const maxPixels = Math.max(redPixels, darkPixels, whitePixels, cyanPixels);
 
@@ -471,27 +465,36 @@
 
         const cars = getAllCars();
         let matchedKey = "AUDI_R8";
+        let matchedCar = {};
 
-        // Switch statement handling exact recognition matching
+        // Switch statement handling exact recognition mapping & upload color customization
         switch (detectedType) {
           case "AUDI":
             matchedKey = "AUDI_R8";
+            matchedCar = { ...cars[matchedKey] };
+            matchedCar.color = "Maroon Red"; // Custom color name for upload view
             break;
           case "RR":
             matchedKey = "ROLLS_ROYCE_WHITE";
+            matchedCar = { ...cars[matchedKey] };
+            matchedCar.color = "Midnight Black"; // Custom color name for upload view
             break;
           case "BMW":
             matchedKey = "BMW_M8";
+            matchedCar = { ...cars[matchedKey] };
+            matchedCar.color = "Alpine White"; // Custom color name for upload view
             break;
           case "MERCEDES":
             matchedKey = "MERCEDES_CYAN";
+            matchedCar = { ...cars[matchedKey] };
+            matchedCar.color = "Salandrome Yellow, Grey"; // Custom color name for upload view
             break;
           default:
             matchedKey = "AUDI_R8";
+            matchedCar = { ...cars[matchedKey] };
             break;
         }
 
-        let matchedCar = { ...cars[matchedKey] };
         matchedCar.img = objectUrl;
 
         document.getElementById("aiStatus").innerText = "Match Confirmed!";
