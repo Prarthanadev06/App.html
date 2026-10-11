@@ -406,7 +406,7 @@
     }
 
     // =========================================================================
-    // UPLOAD & AI RECOGNITION SECTION (Swapped mappings for Yellow Audi & White BMW)
+    // UPLOAD & AI RECOGNITION SECTION (Configured with correct White BMW M8 mapping)
     // =========================================================================
     function autoRecognizeCar(event) {
       const file = event.target.files[0];
@@ -469,14 +469,14 @@
 
         switch (detectedType) {
           case "AUDI_YELLOW":
-            matchedKey = "BMW_M8";
+            matchedKey = "AUDI_R8";
             matchedCar = {
-              id: "BMW_M8",
-              name: "BMW M8 Competition Coupe",
-              color: "Alpine White",
-              hp: "617 hp",
-              speed: "190 mph",
-              specs: "4.4L BMW M TwinPower Turbo V8 engine"
+              id: "AUDI_R8",
+              name: "Audi S4 Sedan",
+              color: "Yellow",
+              hp: "333 hp",
+              speed: "155 mph",
+              specs: "3.0L Supercharged V6 with Quattro AWD"
             };
             break;
           case "RR":
@@ -490,14 +490,14 @@
             matchedCar.color = "Cyan Light Blue";
             break;
           case "BMW_WHITE":
-            matchedKey = "AUDI_R8";
+            matchedKey = "BMW_M8";
             matchedCar = {
-              id: "AUDI_R8",
-              name: "Audi S4 Sedan",
-              color: "Yellow",
-              hp: "333 hp",
-              speed: "155 mph",
-              specs: "3.0L Supercharged V6 with Quattro AWD"
+              id: "BMW_M8",
+              name: "BMW M8 Competition Coupe",
+              color: "Alpine White",
+              hp: "617 hp",
+              speed: "190 mph",
+              specs: "4.4L BMW M TwinPower Turbo V8 engine"
             };
             break;
           default:
