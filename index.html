@@ -237,7 +237,7 @@
     const defaultCars = {
       // =========================================================================
       // CATALOG CAR 1: Audi R8 V10 Performance
-      // Highlight Color: Orange
+      // Highlight Color: ORANGE
       // =========================================================================
       "AUDI_R8": {
         id: "AUDI_R8",
@@ -251,7 +251,7 @@
 
       // =========================================================================
       // CATALOG CAR 2: Rolls-Royce Ghost Black Badge
-      // Highlight Color: Midnight Black
+      // Highlight Color: MIDNIGHT BLACK
       // =========================================================================
       "ROLLS_ROYCE": {
         id: "ROLLS_ROYCE",
@@ -262,59 +262,10 @@
         specs: "6.75L Twin-Turbo V12 luxury cruiser",
         img: "https://images.unsplash.com/photo-1563720223185-11003d516935?w=500"
       },
-       // Audi R8 V10 Performance - Color: Gloss Red
-      "AUDI_R8": {
-        id: "AUDI_R8",
-        name: "Audi R8 V10 Performance",
-        color: "Gloss Red",
-        hp: "602 hp",
-        speed: "205 mph",
-        specs: "Naturally aspirated V10 with Quattro AWD",
-        img: "https://images.unsplash.com/photo-1603584173870-7f23fdae1b7a?w=500"
-      },
-      // Mercedes-AMG GT Black Series - Color: Cyan Light Blue
-      "MERCEDES_CYAN": {
-        id: "MERCEDES_CYAN",
-        name: "Mercedes-AMG GT Black Series",
-        color: "Cyan Light Blue",
-        hp: "720 hp",
-        speed: "202 mph",
-        specs: "4.0L V8 Biturbo track-tuned aero package",
-        img: "https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?w=500"
-      },
-      // Rolls-Royce Ghost Black Badge - Color: Midnight Black
-      "ROLLS_ROYCE": {
-        id: "ROLLS_ROYCE",
-        name: "Rolls-Royce Ghost Black Badge",
-        color: "Midnight Black",
-        hp: "592 hp",
-        speed: "155 mph",
-        specs: "6.75L Twin-Turbo V12 luxury cruiser",
-        img: "https://images.unsplash.com/photo-1563720223185-11003d516935?w=500"
-      },
-      // BMW M8 Competition Coupe - Color: Alpine White
-      "BMW_M8": {
-        id: "BMW_M8",
-        name: "BMW M8 Competition Coupe",
-        color: "Alpine White",
-        hp: "617 hp",
-        speed: "190 mph",
-        specs: "4.4L BMW M TwinPower Turbo V8 engine",
-        img: "https://images.unsplash.com/photo-1580273916550-e323be2ae537?w=500"
-      },
-      // Mercedes-AMG GT S - Color: Solarbeam Yellow
-      "MERCEDES_YELLOW": {
-        id: "MERCEDES_YELLOW",
-        name: "Mercedes-AMG GT S",
-        color: "Solarbeam Yellow",
-        hp: "515 hp",
-        speed: "193 mph",
-        specs: "4.0L V8 Biturbo high-performance coupe",
-        img: "https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?w=500"
 
       // =========================================================================
       // CATALOG CAR 3: BMW M8 Competition Coupe
-      // Highlight Color: Alpine White
+      // Highlight Color: ALPINE WHITE
       // =========================================================================
       "BMW_M8": {
         id: "BMW_M8",
@@ -328,7 +279,7 @@
 
       // =========================================================================
       // CATALOG CAR 4: Rolls-Royce Wraith
-      // Highlight Color: White
+      // Highlight Color: WHITE
       // =========================================================================
       "ROLLS_ROYCE_WHITE": {
         id: "ROLLS_ROYCE_WHITE",
@@ -473,9 +424,9 @@
     // =========================================================================
     // UPLOAD & AI RECOGNITION SECTION MAPPING LOGIC
     // Below pixel filters match and highlight the specific car profiles for upload matching:
-    // - Orange Pixel Threshold -> AUDI_R8 (Orange)
-    // - Dark Pixel Threshold -> ROLLS_ROYCE (Midnight Black)
-    // - White Pixel Threshold -> BMW_M8 / ROLLS_ROYCE_WHITE (White / Alpine White)
+    // - Highlight: ORANGE Pixel Threshold -> AUDI_R8 (Orange)
+    // - Highlight: MIDNIGHT BLACK Pixel Threshold -> ROLLS_ROYCE (Midnight Black)
+    // - Highlight: WHITE Pixel Threshold -> ROLLS_ROYCE_WHITE / BMW_M8 (White / Alpine White)
     // =========================================================================
     function autoRecognizeCar(event) {
       const file = event.target.files[0];
@@ -501,11 +452,11 @@
           const g = pData[i+1];
           const b = pData[i+2];
 
-          // Highlight rule: Orange car profile detection
+          // Highlight rule: ORANGE car profile detection
           if (r > 160 && g > 80 && g < 150 && b < 50) orangePixels++;
-          // Highlight rule: Dark car profile detection
+          // Highlight rule: MIDNIGHT BLACK car profile detection
           else if (r < 50 && g < 50 && b < 50) darkPixels++;
-          // Highlight rule: White car profile detection
+          // Highlight rule: WHITE car profile detection
           else if (r > 170 && g > 170 && b > 170) whitePixels++;
         }
 
