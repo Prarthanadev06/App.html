@@ -235,7 +235,7 @@
 
   <script>
     // =========================================================================
-    // CATALOG SECTION (Untouched as requested)
+    // CATALOG SECTION (Untouched)
     // =========================================================================
     const defaultCars = {
       "AUDI_R8": {
@@ -406,8 +406,12 @@
     }
 
     // =========================================================================
-    // UPLOAD & AI RECOGNITION SECTION (Updated with Switch Statement)
-    // Checks pixel colors: Red/Maroon -> Audi, Black -> Rolls-Royce, White -> BMW
+    // UPLOAD & AI RECOGNITION SECTION (Switch Statement & Pixel Logic)
+    // Pixel checking rules:
+    // - Red/Maroon Pixels (>90 Red, <60 Green, <60 Blue) -> Audi R8
+    // - Black/Dark Pixels (<50 Red, <50 Green, <50 Blue) -> Rolls-Royce Wraith
+    // - White/Light Pixels (>160 Red, >160 Green, >160 Blue) -> BMW M8
+    // - Cyan Pixels (Blue > Red + 10, Green > Red - 10) -> Mercedes GT
     // =========================================================================
     function autoRecognizeCar(event) {
       const file = event.target.files[0];
@@ -433,19 +437,19 @@
           const g = pData[i+1];
           const b = pData[i+2];
 
-          // Check for Red or Maroon pixels (Audi R8)
+          // 1. Red or Maroon pixel threshold check (Audi R8)
           if (r > 90 && g < 60 && b < 60) {
             redPixels++;
           }
-          // Check for Black/Dark pixels (Rolls-Royce)
+          // 2. Black/Dark pixel threshold check (Rolls-Royce Wraith)
           else if (r < 50 && g < 50 && b < 50) {
             darkPixels++;
           }
-          // Check for White/Light pixels (BMW M8)
+          // 3. White/Light pixel threshold check (BMW M8)
           else if (r > 160 && g > 160 && b > 160) {
             whitePixels++;
           }
-          // Check for Cyan pixels (Mercedes GT Black Series)
+          // 4. Cyan pixel threshold check (Mercedes GT)
           else if (b > r + 10 && g > r - 10) {
             cyanPixels++;
           }
@@ -471,16 +475,16 @@
         // Switch statement handling exact recognition matching
         switch (detectedType) {
           case "AUDI":
-            matchedKey = "AUDI_R8"; // Audi R8 V10 Performance
+            matchedKey = "AUDI_R8";
             break;
           case "RR":
-            matchedKey = "ROLLS_ROYCE_WHITE"; // Rolls-Royce Wraith
+            matchedKey = "ROLLS_ROYCE_WHITE";
             break;
           case "BMW":
-            matchedKey = "BMW_M8"; // BMW M8 Competition Coupe
+            matchedKey = "BMW_M8";
             break;
           case "MERCEDES":
-            matchedKey = "MERCEDES_CYAN"; // Mercedes-AMG GT Black Series
+            matchedKey = "MERCEDES_CYAN";
             break;
           default:
             matchedKey = "AUDI_R8";
