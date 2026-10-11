@@ -474,15 +474,16 @@
         let matchedCar = {};
 
         // Switch statement mapping detected type to correct upload name and properly populated info
+        // ONLY CHANGED: case "AUDI" and case "MERCEDES_YELLOW"
         switch (detectedType) {
           case "AUDI":
             matchedKey = "AUDI_R8";
             matchedCar = { ...cars[matchedKey] };
-            matchedCar.name = "Audi R8 V10 Performance";
-            matchedCar.color = "Maroon";
-            matchedCar.hp = "602 hp";
-            matchedCar.speed = "205 mph";
-            matchedCar.specs = "Naturally aspirated V10 with Quattro AWD";
+            matchedCar.name = "Audi R8 V10 Performance"; // Fixed Name
+            matchedCar.color = "Maroon Red"; // Fixed Color Name
+            matchedCar.hp = "602 hp"; // Fixed HP
+            matchedCar.speed = "205 mph"; // Fixed Speed
+            matchedCar.specs = "Naturally aspirated 5.2L V10 with Quattro AWD"; // Fixed Specs
             break;
           case "RR":
             matchedKey = "ROLLS_ROYCE_WHITE";
@@ -505,11 +506,11 @@
           case "MERCEDES_YELLOW":
             matchedKey = "MERCEDES_CYAN";
             matchedCar = { ...cars[matchedKey] };
-            matchedCar.name = "Mercedes-AMG GT S";
-            matchedCar.color = "Yellow";
-            matchedCar.hp = "515 hp";
-            matchedCar.speed = "193 mph";
-            matchedCar.specs = "4.0L V8 Biturbo high-performance coupe";
+            matchedCar.name = "Mercedes-AMG GT S"; // Fixed Name
+            matchedCar.color = "Yellow"; // Fixed Color Name
+            matchedCar.hp = "515 hp"; // Fixed HP
+            matchedCar.speed = "193 mph"; // Fixed Speed
+            matchedCar.specs = "4.0L V8 Biturbo high-performance coupe"; // Fixed Specs
             break;
           case "BMW":
             matchedKey = "BMW_M8";
