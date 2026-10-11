@@ -236,27 +236,27 @@
   <script>
     const defaultCars = {
       // =========================================================================
-      // CAR 1: Mercedes-AMG GT S
-      // Color Highlight: SOLARBEAM YELLOW (Fixed typo)
+      // CATALOG CAR 1: Audi R8 V10 Performance
+      // Highlight Color: ORANGE
       // =========================================================================
-      "MERCEDES_YELLOW": {
-        id: "MERCEDES_YELLOW",
-        name: "Mercedes-AMG GT S",
-        color: "Solarbeam Yellow",
-        hp: "515 hp",
-        speed: "193 mph",
-        specs: "4.0L V8 Biturbo high-performance coupe",
-        img: "https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?w=500"
+      "AUDI_R8": {
+        id: "AUDI_R8",
+        name: "Audi R8 V10 Performance",
+        color: "Matte Grey",
+        hp: "602 hp",
+        speed: "205 mph",
+        specs: "Naturally aspirated V10 with Quattro AWD",
+        img: "https://images.unsplash.com/photo-1603584173870-7f23fdae1b7a?w=500"
       },
 
       // =========================================================================
-      // CAR 2: BMW M8 Competition Coupe
-      // Color Highlight: ALPINE WHITE
+      // CATALOG CAR 2: BMW M8 Competition Coupe
+      // Highlight Color: ALPINE WHITE
       // =========================================================================
       "BMW_M8": {
         id: "BMW_M8",
         name: "BMW M8 Competition Coupe",
-        color: "Alpine White",
+        color: "Alpine White,Blue",
         hp: "617 hp",
         speed: "190 mph",
         specs: "4.4L BMW M TwinPower Turbo V8 engine",
@@ -264,45 +264,31 @@
       },
 
       // =========================================================================
-      // CAR 3: Mercedes-AMG GT S
-      // Color Highlight: MATTE DARK GRAY
+      // CATALOG CAR 3: Rolls-Royce Wraith
+      // Highlight Color: WHITE
       // =========================================================================
-      "MERCEDES_GRAY": {
-        id: "MERCEDES_GRAY",
-        name: "Mercedes-AMG GT S",
-        color: "Matte Dark Gray",
-        hp: "515 hp",
-        speed: "193 mph",
-        specs: "4.0L V8 Biturbo high-performance coupe",
-        img: "https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?w=500"
+      "ROLLS_ROYCE_WHITE": {
+        id: "ROLLS_ROYCE_WHITE",
+        name: "Rolls-Royce Wraith",
+        color: "White",
+        hp: "624 hp",
+        speed: "155 mph",
+        specs: "6.6L Twin-Turbo V12 luxury coupe",
+        img: "https://images.unsplash.com/photo-1563720223185-11003d516935?w=500"
       },
 
       // =========================================================================
-      // CAR 4: Mercedes-AMG GT Black Series
-      // Color Highlight: CYAN LIGHT BLUE
+      // CATALOG CAR 4: Mercedes-AMG GT Black Series
+      // Highlight Color: CYAN LIGHT BLUE
       // =========================================================================
       "MERCEDES_CYAN": {
         id: "MERCEDES_CYAN",
         name: "Mercedes-AMG GT Black Series",
-        color: "Cyan Light Blue",
+        color:"Salandrome yellow, Grey",
         hp: "720 hp",
         speed: "202 mph",
         specs: "4.0L V8 Biturbo track-tuned aero package",
         img: "https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?w=500"
-      },
-
-      // =========================================================================
-      // CAR 5: Rolls-Royce Ghost Black Badge
-      // Color Highlight: MIDNIGHT BLACK (Corrected model mapping)
-      // =========================================================================
-      "ROLLS_ROYCE": {
-        id: "ROLLS_ROYCE",
-        name: "Rolls-Royce Ghost Black Badge",
-        color: "Midnight Black",
-        hp: "592 hp",
-        speed: "155 mph",
-        specs: "6.75L Twin-Turbo V12 luxury cruiser",
-        img: "https://images.unsplash.com/photo-1563720223185-11003d516935?w=500"
       }
     };
 
@@ -310,7 +296,7 @@
 
     function getAllCars() {
       let savedCars = JSON.parse(localStorage.getItem("all_vault_cars") || "null");
-      if (!savedCars || !savedCars["MERCEDES_YELLOW"] || !savedCars["ROLLS_ROYCE"]) {
+      if (!savedCars || !savedCars["AUDI_R8"] || !savedCars["MERCEDES_CYAN"]) {
         localStorage.setItem("all_vault_cars", JSON.stringify(defaultCars));
         return defaultCars;
       }
@@ -437,12 +423,10 @@
 
     // =========================================================================
     // UPLOAD & AI RECOGNITION SECTION MAPPING LOGIC
-    // Automatically analyzes uploaded car photos via pixel analysis:
-    // - Car Match 1: Mercedes-AMG GT S (Color: SOLARBEAM YELLOW)
-    // - Car Match 2: BMW M8 Competition Coupe (Color: ALPINE WHITE)
-    // - Car Match 3: Mercedes-AMG GT S (Color: MATTE DARK GRAY)
-    // - Car Match 4: Mercedes-AMG GT Black Series (Color: CYAN LIGHT BLUE)
-    // - Car Match 5: Rolls-Royce Ghost Black Badge (Color: MIDNIGHT BLACK)
+    // Highlight pixel filters mapped to each car:
+    // - Highlight: ORANGE Pixel Threshold -> AUDI_R8 (Orange)
+    // - Highlight: CYAN Pixel Threshold -> MERCEDES_CYAN (Cyan Light Blue)
+    // - Highlight: WHITE Pixel Threshold -> ROLLS_ROYCE_WHITE (White)[span_0](start_span)[span_0](end_span)
     // =========================================================================
     function autoRecognizeCar(event) {
       const file = event.target.files[0];
@@ -461,40 +445,32 @@
         ctx.drawImage(img, 0, 0, 40, 40);
 
         const pData = ctx.getImageData(0, 0, 40, 40).data;
-        let yellowPixels = 0, whitePixels = 0, grayPixels = 0, cyanPixels = 0, darkPixels = 0;
+        let orangePixels = 0, cyanPixels = 0, whitePixels = 0;
 
         for (let i = 0; i < pData.length; i += 4) {
           const r = pData[i];
           const g = pData[i+1];
           const b = pData[i+2];
 
-          // Color detection: SOLARBEAM YELLOW
-          if (r > 140 && g > 110 && b < 60) yellowPixels++;
-          // Color detection: ALPINE WHITE
-          else if (r > 170 && g > 170 && b > 170) whitePixels++;
-          // Color detection: MATTE DARK GRAY
-          else if (r >= 70 && r <= 160 && g >= 70 && g <= 160 && b >= 70 && b <= 160 && Math.abs(r - g) < 20) grayPixels++;
-          // Color detection: CYAN LIGHT BLUE
+          // Highlight rule: ORANGE car profile detection
+          if (r > 160 && g > 80 && g < 150 && b < 50) orangePixels++;
+          // Highlight rule: CYAN car profile detection
           else if (b > r + 10 && g > r - 10) cyanPixels++;
-          // Color detection: MIDNIGHT BLACK
-          else if (r < 50 && g < 50 && b < 50) darkPixels++;
+          // Highlight rule: WHITE car profile detection
+          else if (r > 170 && g > 170 && b > 170) whitePixels++;
         }
 
         const cars = getAllCars();
-        let matchedKey = "MERCEDES_YELLOW";
+        let matchedKey = "AUDI_R8";
 
-        if (darkPixels > 50) {
-          matchedKey = "ROLLS_ROYCE";
-        } else if (yellowPixels > 25) {
-          matchedKey = "MERCEDES_YELLOW";
-        } else if (whitePixels > 60) {
-          matchedKey = "BMW_M8";
-        } else if (grayPixels > 40) {
-          matchedKey = "MERCEDES_GRAY";
+        if (orangePixels > 25) {
+          matchedKey = "AUDI_R8";
         } else if (cyanPixels > 25) {
           matchedKey = "MERCEDES_CYAN";
+        } else if (whitePixels > 60) {
+          matchedKey = "ROLLS_ROYCE_WHITE";
         } else {
-          matchedKey = "ROLLS_ROYCE";
+          matchedKey = "AUDI_R8";
         }
 
         let matchedCar = { ...cars[matchedKey] };
@@ -529,4 +505,4 @@
     });
   </script>
 </body>
-</html>
+  </html>
