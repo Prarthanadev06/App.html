@@ -271,23 +271,14 @@
         specs: "4.4L BMW M TwinPower Turbo V8 engine",
         img: "https://images.unsplash.com/photo-1580273916550-e323be2ae537?w=500"
       },
-      "MERCEDES_GRAY": {
-        id: "MERCEDES_GRAY",
-        name: "Mercedes-AMG GT S",
-        color: "Matte Dark Gray",
-        hp: "515 hp",
-        speed: "193 mph",
-        specs: "4.0L V8 Biturbo high-performance coupe",
-        img: "https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?w=500"
-      },
-      "MERCEDES_YELLOW": {
-        id: "MERCEDES_YELLOW",
-        name: "Mercedes-AMG GT S",
-        color: "Solarbeam Yellow",
-        hp: "515 hp",
-        speed: "193 mph",
-        specs: "4.0L V8 Biturbo high-performance coupe",
-        img: "https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?w=500"
+      "PORSCHE_GT3": {
+        id: "PORSCHE_GT3",
+        name: "Porsche 911 GT3 RS",
+        color: "Guards Red",
+        hp: "518 hp",
+        speed: "184 mph",
+        specs: "4.0L Naturally Aspirated Flat-6 track weapon",
+        img: "https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?w=500"
       }
     };
 
@@ -420,7 +411,7 @@
       showModal(carData);
     }
 
-    // Precise Auto-Recognition tuned for exact red, yellow, and other car image profiles
+    // Precise Auto-Recognition matching each car profile accurately
     function autoRecognizeCar(event) {
       const file = event.target.files[0];
       if (!file) return;
@@ -438,15 +429,14 @@
         ctx.drawImage(img, 0, 0, 40, 40);
 
         const pData = ctx.getImageData(0, 0, 40, 40).data;
-        let redPixels = 0, cyanPixels = 0, darkPixels = 0, whitePixels = 0, yellowPixels = 0, grayPixels = 0;
+        let redPixels = 0, cyanPixels = 0, darkPixels = 0, whitePixels = 0, grayPixels = 0;
 
         for (let i = 0; i < pData.length; i += 4) {
           const r = pData[i];
           const g = pData[i+1];
           const b = pData[i+2];
 
-          if (r > 120 && g < 70 && b < 70) redPixels++;
-          else if (r > 140 && g > 110 && b < 60) yellowPixels++;
+          if (r > 130 && g < 70 && b < 70) redPixels++;
           else if (b > r + 10 && g > r - 10) cyanPixels++;
           else if (r < 50 && g < 50 && b < 50) darkPixels++;
           else if (r > 170 && g > 170 && b > 170) whitePixels++;
@@ -458,8 +448,6 @@
 
         if (redPixels > 30) {
           matchedKey = "AUDI_R8";
-        } else if (yellowPixels > 25) {
-          matchedKey = "MERCEDES_YELLOW";
         } else if (cyanPixels > 25) {
           matchedKey = "MERCEDES_CYAN";
         } else if (darkPixels > 50) {
