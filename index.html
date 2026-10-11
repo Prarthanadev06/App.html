@@ -3,10 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AutoVault - Car Catalog & QR Scanner</title>
+  <title>AutoVault - Car Catalog & Vision AI Scanner</title>
   
   <!-- Include HTML5-QRCode Library -->
   <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  <!-- Include TensorFlow.js & MobileNet for Image Recognition -->
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.21.0/dist/tf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@2.1.0/dist/mobilenet.min.js"></script>
 
   <style>
     :root {
@@ -53,24 +56,46 @@
     .car-info strong { color: var(--text); }
 
     .delete-btn {
-      margin-top: 10px;
+      margin-top: 12px;
       background: var(--danger);
       color: white;
       border: none;
-      padding: 8px 12px;
+      padding: 10px 12px;
       border-radius: 6px;
       cursor: pointer;
       font-weight: bold;
       width: 100%;
     }
 
-    /* QR Scanner */
+    /* Scanner & Vision AI Container */
     #reader {
       width: 100%;
       border-radius: 12px;
       overflow: hidden;
       background: var(--card-bg);
       border: 2px solid #334155;
+      margin-bottom: 16px;
+    }
+
+    .vision-box {
+      background: var(--card-bg);
+      padding: 16px;
+      border-radius: 12px;
+      border: 2px dashed #475569;
+      text-align: center;
+      margin-top: 20px;
+    }
+    .vision-box input[type="file"] { display: none; }
+    .upload-label {
+      display: inline-block;
+      background: var(--accent);
+      color: #0f172a;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 10px;
+      width: 100%;
     }
 
     /* Forms */
@@ -115,7 +140,7 @@
     }
     .modal-content img { width: 100%; border-radius: 8px; height: 180px; object-fit: cover; margin-bottom: 12px; }
 
-    /* Bottom Nav */
+    /* Bottom Navigation */
     nav {
       position: fixed;
       bottom: 0; left: 0; width: 100%;
@@ -137,258 +162,4 @@
       align-items: center;
       gap: 4px;
     }
-    nav button.active { color: var(--accent); font-weight: bold; }
-  </style>
-</head>
-<body>
-
-  <header>
-    <h1 id="headerTitle">🚗 AutoVault Catalog</h1>
-  </header>
-
-  <div class="container">
-    
-    <!-- CATALOG SECTION -->
-    <div id="catalogSection" class="section active">
-      <div id="carGrid" class="car-grid">
-        <!-- Dynamic Cars Injected Here -->
-      </div>
-    </div>
-
-    <!-- SCANNER SECTION -->
-    <div id="scannerSection" class="section">
-      <p style="text-align:center; color: var(--subtext);">Scan a car QR code to view its specs instantly:</p>
-      <div id="reader"></div>
-    </div>
-
-    <!-- ADD/MANAGE CAR SECTION -->
-    <div id="manageSection" class="section">
-      <h2>Add Custom Car</h2>
-      <form id="addCarForm" onsubmit="saveCustomCar(event)">
-        <input type="text" id="carName" placeholder="Car Name (e.g. BMW M4)" required>
-        <input type="text" id="carColor" placeholder="Color" required>
-        <input type="text" id="carHp" placeholder="Horsepower (e.g. 503 hp)" required>
-        <input type="text" id="carSpeed" placeholder="Top Speed (e.g. 180 mph)" required>
-        <textarea id="carSpecs" placeholder="Description / Specs" rows="3" required></textarea>
-        <input type="url" id="carImg" placeholder="Image URL (Unsplash or direct link)" required>
-        <button type="submit" class="submit-btn">Save & Add to Catalog</button>
-      </form>
-    </div>
-
-  </div>
-
-  <!-- Modal Popup for Scanned Car Details -->
-  <div id="carModal" class="modal">
-    <div class="modal-content">
-      <img id="modalImage" src="" alt="Car Image">
-      <h2 id="modalTitle" style="color:var(--accent); margin:5px 0;"></h2>
-      <p style="text-align:left;"><strong>Color:</strong> <span id="modalColor"></span></p>
-      <p style="text-align:left;"><strong>Horsepower:</strong> <span id="modalHp"></span></p>
-      <p style="text-align:left;"><strong>Top Speed:</strong> <span id="modalSpeed"></span></p>
-      <p style="text-align:left;"><strong>Specs:</strong> <span id="modalSpecs"></span></p>
-      <button class="submit-btn" style="width:100%; margin-top:15px;" onclick="closeModal()">Scan Another</button>
-    </div>
-  </div>
-
-  <!-- Bottom Navigation Bar -->
-  <nav>
-    <button onclick="switchTab('catalog')" id="navCatalog" class="active"><span>🚗</span> Catalog</button>
-    <button onclick="switchTab('scanner')" id="navScanner"><span>📷</span> Scan QR</button>
-    <button onclick="switchTab('manage')" id="navManage"><span>➕</span> Add / Manage</button>
-  </nav>
-
-  <script>
-    // Default Cars Catalog
-    const defaultCars = {
-      "TESLA_MODEL_S": {
-        id: "TESLA_MODEL_S",
-        name: "Tesla Model S Plaid",
-        color: "Deep Crimson Red",
-        hp: "1,020 hp",
-        speed: "200 mph",
-        specs: "Tri-Motor AWD, 0-60 mph in 1.99s",
-        img: "https://images.unsplash.com/photo-1617788138017-80ad40651399?w=500",
-        isCustom: false
-      },
-      "PORSCHE_911": {
-        id: "PORSCHE_911",
-        name: "Porsche 911 GT3",
-        color: "Carrara White",
-        hp: "502 hp",
-        speed: "197 mph",
-        specs: "4.0L Naturally Aspirated Flat-6 engine",
-        img: "https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?w=500",
-        isCustom: false
-      },
-      "LAMBORGHINI_HURACAN": {
-        id: "LAMBORGHINI_HURACAN",
-        name: "Lamborghini Huracán STO",
-        color: "Matte Racing Blue",
-        hp: "630 hp",
-        speed: "193 mph",
-        specs: "5.2L V10 engine built for the track",
-        img: "https://images.unsplash.com/photo-1544829099-b9a0c07fad1a?w=500",
-        isCustom: false
-      },
-      "AUDI_R8": {
-        id: "AUDI_R8",
-        name: "Audi R8 V10 Performance",
-        color: "Daytona Gray",
-        hp: "602 hp",
-        speed: "205 mph",
-        specs: "Naturally aspirated V10 with Quattro AWD",
-        img: "https://images.unsplash.com/photo-1603584173870-7f23fdae1b7a?w=500",
-        isCustom: false
-      }
-    };
-
-    let html5QrCode = null;
-
-    // Load catalog items (Default + LocalStorage Custom Cars)
-    function getAllCars() {
-      const customCars = JSON.parse(localStorage.getItem("custom_cars") || "{}");
-      return { ...defaultCars, ...customCars };
-    }
-
-    function renderCatalog() {
-      const cars = getAllCars();
-      const grid = document.getElementById("carGrid");
-      grid.innerHTML = "";
-
-      Object.values(cars).forEach(car => {
-        const card = document.createElement("div");
-        card.className = "car-card";
-        card.innerHTML = `
-          <img src="${car.img}" alt="${car.name}">
-          <div class="car-info">
-            <h3>${car.name}</h3>
-            <p><strong>Color:</strong> ${car.color}</p>
-            <p><strong>Power:</strong> ${car.hp} | <strong>Top Speed:</strong> ${car.speed}</p>
-            <p><strong>Specs:</strong> ${car.specs}</p>
-            ${car.isCustom ? `<button class="delete-btn" onclick="deleteCustomCar('${car.id}')">Delete Car</button>` : ""}
-          </div>
-        `;
-        grid.appendChild(card);
-      });
-    }
-
-    // Tab Switcher
-    function switchTab(tab) {
-      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-      document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
-
-      if (tab === 'catalog') {
-        document.getElementById('catalogSection').classList.add('active');
-        document.getElementById('navCatalog').classList.add('active');
-        document.getElementById('headerTitle').innerText = "🚗 AutoVault Catalog";
-        stopScanner();
-        renderCatalog();
-      } else if (tab === 'scanner') {
-        document.getElementById('scannerSection').classList.add('active');
-        document.getElementById('navScanner').classList.add('active');
-        document.getElementById('headerTitle').innerText = "📷 QR Car Scanner";
-        startScanner();
-      } else if (tab === 'manage') {
-        document.getElementById('manageSection').classList.add('active');
-        document.getElementById('navManage').classList.add('active');
-        document.getElementById('headerTitle').innerText = "➕ Manage Cars";
-        stopScanner();
-      }
-    }
-
-    // Save Custom Car
-    function saveCustomCar(e) {
-      e.preventDefault();
-      const id = "CUSTOM_" + Date.now();
-      const newCar = {
-        id: id,
-        name: document.getElementById("carName").value,
-        color: document.getElementById("carColor").value,
-        hp: document.getElementById("carHp").value,
-        speed: document.getElementById("carSpeed").value,
-        specs: document.getElementById("carSpecs").value,
-        img: document.getElementById("carImg").value,
-        isCustom: true
-      };
-
-      const customCars = JSON.parse(localStorage.getItem("custom_cars") || "{}");
-      customCars[id] = newCar;
-      localStorage.setItem("custom_cars", JSON.stringify(customCars));
-
-      alert("Car added successfully!");
-      document.getElementById("addCarForm").reset();
-      switchTab('catalog');
-    }
-
-    // Delete Custom Car
-    function deleteCustomCar(id) {
-      if (confirm("Are you sure you want to delete this custom car?")) {
-        const customCars = JSON.parse(localStorage.getItem("custom_cars") || "{}");
-        delete customCars[id];
-        localStorage.setItem("custom_cars", JSON.stringify(customCars));
-        renderCatalog();
-      }
-    }
-
-    // QR Code Scanner Logic
-    function startScanner() {
-      if (!html5QrCode) {
-        html5QrCode = new Html5Qrcode("reader");
-      }
-      html5QrCode.start(
-        { facingMode: "environment" },
-        { fps: 10, qrbox: { width: 250, height: 250 } },
-        (decodedText) => {
-          handleScannedCode(decodedText);
-        },
-        (error) => {}
-      ).catch(err => {
-        console.error("Camera start error: ", err);
-      });
-    }
-
-    function stopScanner() {
-      if (html5QrCode && html5QrCode.isScanning) {
-        html5QrCode.stop().catch(err => console.log(err));
-      }
-    }
-
-    function handleScannedCode(code) {
-      stopScanner();
-      const cars = getAllCars();
-      let carData = cars[code];
-
-      if (!carData) {
-        try {
-          carData = JSON.parse(code); // Fallback to raw JSON string inside QR
-        } catch(e) {
-          alert("Scanned code not recognized in catalog: " + code);
-          startScanner();
-          return;
-        }
-      }
-
-      // Show details in modal
-      document.getElementById("modalTitle").innerText = carData.name;
-      document.getElementById("modalColor").innerText = carData.color;
-      document.getElementById("modalHp").innerText = carData.hp;
-      document.getElementById("modalSpeed").innerText = carData.speed;
-      document.getElementById("modalSpecs").innerText = carData.specs;
-      document.getElementById("modalImage").src = carData.img;
-      document.getElementById("carModal").style.display = "flex";
-    }
-
-    function closeModal() {
-      document.getElementById("carModal").style.display = "none";
-      if (document.getElementById('scannerSection').classList.contains('active')) {
-        startScanner();
-      }
-    }
-
-    // Initialize initial render
-    window.addEventListener("DOMContentLoaded", () => {
-      renderCatalog();
-    });
-  </script>
-</body>
-</html>
+    nav button.active { color:
