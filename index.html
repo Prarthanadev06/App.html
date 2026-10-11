@@ -251,12 +251,12 @@
 
       // =========================================================================
       // CATALOG CAR 2: Rolls-Royce Ghost Black Badge
-      // Highlight Color: MIDNIGHT BLACK
+      // Highlight Color: WHITE (Updated from Black)
       // =========================================================================
       "ROLLS_ROYCE": {
         id: "ROLLS_ROYCE",
         name: "Rolls-Royce Ghost Black Badge",
-        color: "Midnight Black",
+        color: "White",
         hp: "592 hp",
         speed: "155 mph",
         specs: "6.75L Twin-Turbo V12 luxury cruiser",
@@ -289,6 +289,20 @@
         speed: "155 mph",
         specs: "6.6L Twin-Turbo V12 luxury coupe",
         img: "https://images.unsplash.com/photo-1563720223185-11003d516935?w=500"
+      },
+
+      // =========================================================================
+      // CATALOG CAR 5: Mercedes-AMG GT Black Series
+      // Highlight Color: CYAN LIGHT BLUE
+      // =========================================================================
+      "MERCEDES_CYAN": {
+        id: "MERCEDES_CYAN",
+        name: "Mercedes-AMG GT Black Series",
+        color: "Cyan Light Blue",
+        hp: "720 hp",
+        speed: "202 mph",
+        specs: "4.0L V8 Biturbo track-tuned aero package",
+        img: "https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?w=500"
       }
     };
 
@@ -296,7 +310,7 @@
 
     function getAllCars() {
       let savedCars = JSON.parse(localStorage.getItem("all_vault_cars") || "null");
-      if (!savedCars || !savedCars["AUDI_R8"] || !savedCars["ROLLS_ROYCE_WHITE"]) {
+      if (!savedCars || !savedCars["AUDI_R8"] || !savedCars["MERCEDES_CYAN"]) {
         localStorage.setItem("all_vault_cars", JSON.stringify(defaultCars));
         return defaultCars;
       }
@@ -423,10 +437,10 @@
 
     // =========================================================================
     // UPLOAD & AI RECOGNITION SECTION MAPPING LOGIC
-    // Below pixel filters match and highlight the specific car profiles for upload matching:
+    // Highlight pixel filters mapped to each of the 5 cars:
     // - Highlight: ORANGE Pixel Threshold -> AUDI_R8 (Orange)
-    // - Highlight: MIDNIGHT BLACK Pixel Threshold -> ROLLS_ROYCE (Midnight Black)
-    // - Highlight: WHITE Pixel Threshold -> ROLLS_ROYCE_WHITE / BMW_M8 (White / Alpine White)
+    // - Highlight: CYAN Pixel Threshold -> MERCEDES_CYAN (Cyan Light Blue)
+    // - Highlight: WHITE Pixel Threshold -> ROLLS_ROYCE / ROLLS_ROYCE_WHITE / BMW_M8 (White)
     // =========================================================================
     function autoRecognizeCar(event) {
       const file = event.target.files[0];
@@ -445,7 +459,7 @@
         ctx.drawImage(img, 0, 0, 40, 40);
 
         const pData = ctx.getImageData(0, 0, 40, 40).data;
-        let orangePixels = 0, darkPixels = 0, whitePixels = 0;
+        let orangePixels = 0, cyanPixels = 0, whitePixels = 0;
 
         for (let i = 0; i < pData.length; i += 4) {
           const r = pData[i];
@@ -454,8 +468,8 @@
 
           // Highlight rule: ORANGE car profile detection
           if (r > 160 && g > 80 && g < 150 && b < 50) orangePixels++;
-          // Highlight rule: MIDNIGHT BLACK car profile detection
-          else if (r < 50 && g < 50 && b < 50) darkPixels++;
+          // Highlight rule: CYAN car profile detection
+          else if (b > r + 10 && g > r - 10) cyanPixels++;
           // Highlight rule: WHITE car profile detection
           else if (r > 170 && g > 170 && b > 170) whitePixels++;
         }
@@ -465,8 +479,8 @@
 
         if (orangePixels > 25) {
           matchedKey = "AUDI_R8";
-        } else if (darkPixels > 50) {
-          matchedKey = "ROLLS_ROYCE";
+        } else if (cyanPixels > 25) {
+          matchedKey = "MERCEDES_CYAN";
         } else if (whitePixels > 60) {
           matchedKey = "ROLLS_ROYCE_WHITE";
         } else {
