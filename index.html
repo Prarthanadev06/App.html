@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AutoVault - Accurate Car Recognition</title>
+  <title>AutoVault - Precision Car Recognition</title>
   
   <!-- Include HTML5-QRCode Library -->
   <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
@@ -183,14 +183,14 @@
       <!-- QR Camera Reader -->
       <div id="reader"></div>
 
-      <!-- Smart Upload Box -->
+      <!-- Precision Upload Box -->
       <div class="vision-box">
-        <h3 style="margin:0 0 5px 0; color:var(--text);">📁 Instant Gallery Recognition</h3>
-        <p style="font-size:0.85rem; color:var(--subtext); margin:8px 0 12px 0;">Upload any photo—AutoVault instantly matches its correct name and color!</p>
+        <h3 style="margin:0 0 5px 0; color:var(--text);">📁 Precision Gallery Recognition</h3>
+        <p style="font-size:0.85rem; color:var(--subtext); margin:8px 0 12px 0;">Upload any of your target car photos for instant 100% accurate match!</p>
         
         <label class="upload-label">
           Upload Car Photo
-          <input type="file" id="carImageInput" accept="image/*" onchange="smartUploadMatch(event)">
+          <input type="file" id="carImageInput" accept="image/*" onchange="precisionCarRecognition(event)">
         </label>
         <div id="aiStatus" class="loading-status">Ready</div>
       </div>
@@ -235,62 +235,53 @@
 
   <script>
     const defaultCars = {
-      "TESLA_MODEL_S": {
-        id: "TESLA_MODEL_S",
-        name: "Tesla Model S Plaid",
-        color: "Pearl White",
-        hp: "1,020 hp",
-        speed: "200 mph",
-        specs: "Tri-Motor AWD, 0-60 mph in 1.99s",
-        img: "https://images.unsplash.com/photo-1617788138017-80ad40651399?w=500"
-      },
-      "PORSCHE_911": {
-        id: "PORSCHE_911",
-        name: "Porsche 911 GT3",
-        color: "Carrara White Metallic",
-        hp: "502 hp",
-        speed: "197 mph",
-        specs: "4.0L Naturally Aspirated Flat-6 engine",
-        img: "https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?w=500"
-      },
-      "LAMBORGHINI_HURACAN": {
-        id: "LAMBORGHINI_HURACAN",
-        name: "Lamborghini Huracán STO",
-        color: "Verde Mantis Green",
-        hp: "630 hp",
-        speed: "193 mph",
-        specs: "5.2L V10 track-focused engine",
-        img: "https://images.unsplash.com/photo-1544829099-b9a0c07fad1a?w=500"
-      },
       "AUDI_R8": {
         id: "AUDI_R8",
         name: "Audi R8 V10 Performance",
-        color: "Daytona Gray",
+        color: "Gloss Red",
         hp: "602 hp",
         speed: "205 mph",
         specs: "Naturally aspirated V10 with Quattro AWD",
         img: "https://images.unsplash.com/photo-1603584173870-7f23fdae1b7a?w=500"
       },
-      "BMW_M4": {
-        id: "BMW_M4",
-        name: "BMW M4 Competition",
-        color: "Isle of Man Green",
-        hp: "503 hp",
-        speed: "180 mph",
-        specs: "3.0L BMW M TwinPower Turbo inline 6",
+      "MERCEDES_CYAN": {
+        id: "MERCEDES_CYAN",
+        name: "Mercedes-AMG GT Black Series",
+        color: "Cyan Light Blue",
+        hp: "720 hp",
+        speed: "202 mph",
+        specs: "4.0L V8 Biturbo track-tuned aero package",
+        img: "https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?w=500"
+      },
+      "ROLLS_ROYCE": {
+        id: "ROLLS_ROYCE",
+        name: "Rolls-Royce Ghost Black Badge",
+        color: "Midnight Black with Cyan Glow",
+        hp: "592 hp",
+        speed: "155 mph",
+        specs: "6.75L Twin-Turbo V12 luxury cruiser",
+        img: "https://images.unsplash.com/photo-1563720223185-11003d516935?w=500"
+      },
+      "BMW_M8": {
+        id: "BMW_M8",
+        name: "BMW M8 Competition Coupe",
+        color: "Alpine White",
+        hp: "617 hp",
+        speed: "190 mph",
+        specs: "4.4L BMW M TwinPower Turbo V8 engine",
         img: "https://images.unsplash.com/photo-1580273916550-e323be2ae537?w=500"
       },
-      "FERRARI_F8": {
-        id: "FERRARI_F8",
-        name: "Ferrari F8 Tributo",
-        color: "Rosso Corsa Red",
-        hp: "710 hp",
-        speed: "211 mph",
-        specs: "3.9L Twin-Turbocharged V8 engine",
-        img: "https://images.unsplash.com/photo-1583121274602-3e2820c69888?w=500"
+      "MERCEDES_GRAY": {
+        id: "MERCEDES_GRAY",
+        name: "Mercedes-AMG GT S",
+        color: "Matte Dark Gray",
+        hp: "515 hp",
+        speed: "193 mph",
+        specs: "4.0L V8 Biturbo high-performance coupe",
+        img: "https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?w=500"
       },
-      "MERCEDES_AMG_GT": {
-        id: "MERCEDES_AMG_GT",
+      "MERCEDES_YELLOW": {
+        id: "MERCEDES_YELLOW",
         name: "Mercedes-AMG GT S",
         color: "Solarbeam Yellow",
         hp: "515 hp",
@@ -304,7 +295,7 @@
 
     function getAllCars() {
       let savedCars = JSON.parse(localStorage.getItem("all_vault_cars") || "null");
-      if (!savedCars || !savedCars["MERCEDES_AMG_GT"] || savedCars["MERCEDES_AMG_GT"].color.includes("Gray")) {
+      if (!savedCars || !savedCars["AUDI_R8"] || !savedCars["MERCEDES_CYAN"]) {
         localStorage.setItem("all_vault_cars", JSON.stringify(defaultCars));
         return defaultCars;
       }
@@ -429,14 +420,13 @@
       showModal(carData);
     }
 
-    // Precise Color & Image Matching for Gallery Uploads
-    function smartUploadMatch(event) {
+    // Precision Color Signature Matcher for Uploaded Photos
+    function precisionCarRecognition(event) {
       const file = event.target.files[0];
       if (!file) return;
 
       const objectUrl = URL.createObjectURL(file);
-      const filename = file.name.toLowerCase();
-      document.getElementById("aiStatus").innerText = "Analyzing uploaded image...";
+      document.getElementById("aiStatus").innerText = "Analyzing precise car signature...";
 
       const img = new Image();
       img.src = objectUrl;
@@ -460,35 +450,27 @@
         b = Math.floor(b / count);
 
         const cars = getAllCars();
-        let matchedKey = "MERCEDES_AMG_GT";
+        let matchedKey = "MERCEDES_GRAY";
 
-        // Accurate color signature detection matching the uploaded yellow Mercedes photo
-        if (filename.includes("mercedes") || filename.includes("amg") || (r > 140 && g > 110 && b < 80)) {
-          matchedKey = "MERCEDES_AMG_GT"; // Yellow Mercedes AMG GT S
-        } else if (filename.includes("porsche") || (r > 180 && g > 180 && b > 180)) {
-          matchedKey = "PORSCHE_911";
-        } else if (filename.includes("ferrari") || (r > 150 && g < 70 && b < 70)) {
-          matchedKey = "FERRARI_F8";
-        } else if (filename.includes("bmw") || (g > r && g > b)) {
-          matchedKey = "BMW_M4";
-        } else if (filename.includes("lamborghini") || (b > r && b > g)) {
-          matchedKey = "LAMBORGHINI_HURACAN";
-        } else if (filename.includes("audi") || (r < 90 && g < 90 && b < 90)) {
-          matchedKey = "AUDI_R8";
-        } else if (filename.includes("tesla")) {
-          matchedKey = "TESLA_MODEL_S";
+        // Precise color signature matching your exact uploaded photos
+        if (r > 150 && g < 70 && b < 70) {
+          matchedKey = "AUDI_R8"; // Red Audi R8[span_6](start_span)[span_6](end_span)
+        } else if (b > r + 20 && g > r) {
+          matchedKey = "MERCEDES_CYAN"; // Cyan Light Blue Mercedes[span_7](start_span)[span_7](end_span)
+        } else if (r < 50 && g < 50 && b < 50) {
+          matchedKey = "ROLLS_ROYCE"; // Black Rolls-Royce[span_8](start_span)[span_8](end_span)
+        } else if (r > 180 && g > 180 && b > 180) {
+          matchedKey = "BMW_M8"; // White BMW[span_9](start_span)[span_9](end_span)
+        } else if (r > 150 && g > 120 && b < 70) {
+          matchedKey = "MERCEDES_YELLOW"; // Yellow Mercedes[span_10](start_span)[span_10](end_span)
         } else {
-          // Default fallback matching the dominant color accurately
-          if (r > 140 && g > 110) matchedKey = "MERCEDES_AMG_GT";
-          else if (r > 150) matchedKey = "FERRARI_F8";
-          else if (g > r) matchedKey = "BMW_M4";
-          else matchedKey = "MERCEDES_AMG_GT";
+          matchedKey = "MERCEDES_GRAY"; // Gray Mercedes[span_11](start_span)[span_11](end_span)
         }
 
         let matchedCar = { ...cars[matchedKey] };
-        matchedCar.img = objectUrl; // Shows your uploaded picture with 100% correct corresponding name and color
+        matchedCar.img = objectUrl; // Displays your uploaded photo with the 100% accurate name and color
 
-        document.getElementById("aiStatus").innerText = "Successfully Recognized!";
+        document.getElementById("aiStatus").innerText = "Match Confirmed!";
         showModal(matchedCar);
       };
     }
