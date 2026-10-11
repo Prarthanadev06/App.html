@@ -238,7 +238,7 @@
       "AUDI_R8": {
         id: "AUDI_R8",
         name: "Audi R8 V10 Performance",
-        color: "Gloss Red",
+        color: "Matte Gray",
         hp: "602 hp",
         speed: "205 mph",
         specs: "Naturally aspirated V10 with Quattro AWD",
@@ -274,7 +274,7 @@
       "PORSCHE_GT3": {
         id: "PORSCHE_GT3",
         name: "Porsche 911 GT3 RS",
-        color: "Guards Red",
+        color: "White",
         hp: "518 hp",
         speed: "184 mph",
         specs: "4.0L Naturally Aspirated Flat-6 track weapon",
@@ -286,7 +286,7 @@
 
     function getAllCars() {
       let savedCars = JSON.parse(localStorage.getItem("all_vault_cars") || "null");
-      if (!savedCars || !savedCars["AUDI_R8"] || !savedCars["ROLLS_ROYCE"]) {
+      if (!savedCars || !savedCars["AUDI_R8"] || !savedCars["PORSCHE_GT3"]) {
         localStorage.setItem("all_vault_cars", JSON.stringify(defaultCars));
         return defaultCars;
       }
@@ -411,7 +411,6 @@
       showModal(carData);
     }
 
-    // Precise Auto-Recognition matching each car profile accurately
     function autoRecognizeCar(event) {
       const file = event.target.files[0];
       if (!file) return;
@@ -455,7 +454,7 @@
         } else if (whitePixels > 60) {
           matchedKey = "BMW_M8";
         } else if (grayPixels > 40) {
-          matchedKey = "MERCEDES_GRAY";
+          matchedKey = "PORSCHE_GT3";
         } else {
           matchedKey = "MERCEDES_GRAY";
         }
