@@ -406,7 +406,12 @@
     }
 
     // =========================================================================
-    // UPLOAD & AI RECOGNITION SECTION (Switch Statement & Custom Upload Colors)
+    // UPLOAD & AI RECOGNITION SECTION (All 5 Cars Mapped via Pixel Logic)
+    // - Red/Maroon -> Audi (Maroon)
+    // - Black/Dark -> Rolls-Royce (Midnight Black)
+    // - Cyan/Blue -> Mercedes (Cyan Light Blue)
+    // - Yellow -> Mercedes (Yellow)
+    // - White -> BMW (Alpine White)
     // =========================================================================
     function autoRecognizeCar(event) {
       const file = event.target.files[0];
@@ -425,69 +430,80 @@
         ctx.drawImage(img, 0, 0, 40, 40);
 
         const pData = ctx.getImageData(0, 0, 40, 40).data;
-        let redPixels = 0, darkPixels = 0, whitePixels = 0, cyanPixels = 0;
+        let redPixels = 0, darkPixels = 0, whitePixels = 0, cyanPixels = 0, yellowPixels = 0;
 
         for (let i = 0; i < pData.length; i += 4) {
           const r = pData[i];
           const g = pData[i+1];
           const b = pData[i+2];
 
-          // Red or Maroon pixel check -> Audi R8
+          // 1. Red or Maroon pixel check -> Audi R8
           if (r > 90 && g < 60 && b < 60) {
             redPixels++;
           }
-          // Black/Dark pixel check -> Rolls-Royce
+          // 2. Yellow pixel check -> Yellow Mercedes
+          else if (r > 150 && g > 120 && b < 70) {
+            yellowPixels++;
+          }
+          // 3. Black/Dark pixel check -> Rolls-Royce Wraith
           else if (r < 50 && g < 50 && b < 50) {
             darkPixels++;
           }
-          // White/Light pixel check -> BMW M8
-          else if (r > 160 && g > 160 && b > 160) {
-            whitePixels++;
-          }
-          // Cyan pixel check -> Mercedes GT
+          // 4. Cyan pixel check -> Cyan Mercedes
           else if (b > r + 10 && g > r - 10) {
             cyanPixels++;
+          }
+          // 5. White/Light pixel check -> BMW M8
+          else if (r > 160 && g > 160 && b > 160) {
+            whitePixels++;
           }
         }
 
         let detectedType = "AUDI";
-        const maxPixels = Math.max(redPixels, darkPixels, whitePixels, cyanPixels);
+        const maxPixels = Math.max(redPixels, yellowPixels, darkPixels, cyanPixels, whitePixels);
 
         if (maxPixels === redPixels) {
           detectedType = "AUDI";
+        } else if (maxPixels === yellowPixels) {
+          detectedType = "MERCEDES_YELLOW";
         } else if (maxPixels === darkPixels) {
           detectedType = "RR";
+        } else if (maxPixels === cyanPixels) {
+          detectedType = "MERCEDES_CYAN";
         } else if (maxPixels === whitePixels) {
           detectedType = "BMW";
-        } else if (maxPixels === cyanPixels) {
-          detectedType = "MERCEDES";
         }
 
         const cars = getAllCars();
         let matchedKey = "AUDI_R8";
         let matchedCar = {};
 
-        // Switch statement handling exact recognition mapping & upload color customization
+        // Switch statement mapping detected type to upload name and user-specified colors
         switch (detectedType) {
           case "AUDI":
             matchedKey = "AUDI_R8";
             matchedCar = { ...cars[matchedKey] };
-            matchedCar.color = "Maroon Red"; // Custom color name for upload view
+            matchedCar.color = "Maroon"; // Audi
             break;
           case "RR":
             matchedKey = "ROLLS_ROYCE_WHITE";
             matchedCar = { ...cars[matchedKey] };
-            matchedCar.color = "Midnight Black"; // Custom color name for upload view
+            matchedCar.color = "Midnight Black"; // Rolls-Royce
+            break;
+          case "MERCEDES_CYAN":
+            matchedKey = "MERCEDES_CYAN";
+            matchedCar = { ...cars[matchedKey] };
+            matchedCar.color = "Cyan Light Blue"; // Cyan Mercedes
+            break;
+          case "MERCEDES_YELLOW":
+            matchedKey = "MERCEDES_CYAN";
+            matchedCar = { ...cars[matchedKey] };
+            matchedCar.color = "Yellow"; // Yellow Mercedes
             break;
           case "BMW":
             matchedKey = "BMW_M8";
             matchedCar = { ...cars[matchedKey] };
-            matchedCar.color = "Alpine White"; // Custom color name for upload view
-            break;
-          case "MERCEDES":
-            matchedKey = "MERCEDES_CYAN";
-            matchedCar = { ...cars[matchedKey] };
-            matchedCar.color = "Salandrome Yellow, Grey"; // Custom color name for upload view
+            matchedCar.color = "Alpine White"; // BMW
             break;
           default:
             matchedKey = "AUDI_R8";
