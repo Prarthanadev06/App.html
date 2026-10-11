@@ -229,21 +229,30 @@
   <!-- Bottom Navigation Bar -->
   <nav>
     <button onclick="switchTab('catalog')" id="navCatalog" class="active"><span>🚗</span> Catalog</button>
-    <button onclick="switchTab('scanner')" id="navScanner"><span>📷</span> Scan / Upload</button>
+    <button onclick="switchTab('scanner')" id="navScanner"><span>📷</span> Scan / Upload & AI Recognition</button>
     <button onclick="switchTab('manage')" id="navManage"><span>➕</span> Add Car</button>
   </nav>
 
   <script>
     const defaultCars = {
+      // ==========================================
+      // CATALOG CAR 1: Audi R8 V10 Performance
+      // Highlight Color: Gloss Red
+      // ==========================================
       "AUDI_R8": {
         id: "AUDI_R8",
         name: "Audi R8 V10 Performance",
-        color: "Gloss Red",
+        color: "Matte Grey",
         hp: "602 hp",
         speed: "205 mph",
         specs: "Naturally aspirated V10 with Quattro AWD",
         img: "https://images.unsplash.com/photo-1603584173870-7f23fdae1b7a?w=500"
       },
+
+      // ==========================================
+      // CATALOG CAR 2: Mercedes-AMG GT Black Series
+      // Highlight Color: Cyan Light Blue
+      // ==========================================
       "MERCEDES_CYAN": {
         id: "MERCEDES_CYAN",
         name: "Mercedes-AMG GT Black Series",
@@ -253,6 +262,11 @@
         specs: "4.0L V8 Biturbo track-tuned aero package",
         img: "https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?w=500"
       },
+
+      // ==========================================
+      // CATALOG CAR 3: Rolls-Royce Ghost Black Badge
+      // Highlight Color: Midnight Black
+      // ==========================================
       "ROLLS_ROYCE": {
         id: "ROLLS_ROYCE",
         name: "Rolls-Royce Ghost Black Badge",
@@ -262,23 +276,47 @@
         specs: "6.75L Twin-Turbo V12 luxury cruiser",
         img: "https://images.unsplash.com/photo-1563720223185-11003d516935?w=500"
       },
+
+      // ==========================================
+      // CATALOG CAR 4: BMW M8 Competition Coupe
+      // Highlight Color: Alpine White
+      // ==========================================
       "BMW_M8": {
         id: "BMW_M8",
         name: "BMW M8 Competition Coupe",
-        color: "Alpine White",
+        color: "Blue, Teal Green",
         hp: "617 hp",
         speed: "190 mph",
         specs: "4.4L BMW M TwinPower Turbo V8 engine",
         img: "https://images.unsplash.com/photo-1580273916550-e323be2ae537?w=500"
       },
+
+      // ==========================================
+      // CATALOG CAR 5: Mercedes-AMG GT S
+      // Highlight Color: Solarbeam Yellow
+      // ==========================================
       "MERCEDES_YELLOW": {
         id: "MERCEDES_YELLOW",
         name: "Mercedes-AMG GT S",
-        color: "Solarbeam Yellow",
+        color: "Solarbeam Yellow, Grey",
         hp: "515 hp",
         speed: "193 mph",
         specs: "4.0L V8 Biturbo high-performance coupe",
         img: "https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?w=500"
+      },
+
+      // ==========================================
+      // CATALOG CAR 6: Rolls-Royce Wraith
+      // Highlight Color: White
+      // ==========================================
+      "ROLLS_ROYCE_WHITE": {
+        id: "ROLLS_ROYCE_WHITE",
+        name: "Rolls-Royce ",
+        color: "White",
+        hp: "624 hp",
+        speed: "155 mph",
+        specs: "6.6L Twin-Turbo V12 luxury coupe",
+        img: "https://images.unsplash.com/photo-1563720223185-11003d516935?w=500"
       }
     };
 
@@ -286,7 +324,7 @@
 
     function getAllCars() {
       let savedCars = JSON.parse(localStorage.getItem("all_vault_cars") || "null");
-      if (!savedCars || !savedCars["AUDI_R8"] || !savedCars["MERCEDES_YELLOW"]) {
+      if (!savedCars || !savedCars["AUDI_R8"] || !savedCars["MERCEDES_YELLOW"] || !savedCars["ROLLS_ROYCE_WHITE"]) {
         localStorage.setItem("all_vault_cars", JSON.stringify(defaultCars));
         return defaultCars;
       }
@@ -411,6 +449,15 @@
       showModal(carData);
     }
 
+    // =========================================================================
+    // UPLOAD & AI RECOGNITION SECTION MAPPING LOGIC
+    // Below pixel filters match and highlight the specific car profiles for upload matching:
+    // - Red Pixel Threshold -> AUDI_R8 (Gloss Red)
+    // - Yellow Pixel Threshold -> MERCEDES_YELLOW (Solarbeam Yellow)
+    // - Cyan Pixel Threshold -> MERCEDES_CYAN (Cyan Light Blue)
+    // - Dark Pixel Threshold -> ROLLS_ROYCE (Midnight Black)
+    // - White Pixel Threshold -> BMW_M8 / ROLLS_ROYCE_WHITE (White / Alpine White)
+    // =========================================================================
     function autoRecognizeCar(event) {
       const file = event.target.files[0];
       if (!file) return;
@@ -435,10 +482,15 @@
           const g = pData[i+1];
           const b = pData[i+2];
 
+          // Highlight rule: Red car profile detection
           if (r > 120 && g < 70 && b < 70) redPixels++;
+          // Highlight rule: Yellow car profile detection
           else if (r > 140 && g > 110 && b < 60) yellowPixels++;
+          // Highlight rule: Cyan car profile detection
           else if (b > r + 10 && g > r - 10) cyanPixels++;
+          // Highlight rule: Dark car profile detection
           else if (r < 50 && g < 50 && b < 50) darkPixels++;
+          // Highlight rule: White car profile detection
           else if (r > 170 && g > 170 && b > 170) whitePixels++;
         }
 
