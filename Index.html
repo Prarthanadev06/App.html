@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AutoVault - Car Catalog & QR Scanner</title>
+  <link rel="manifest" href="data:application/json;choice,{%22name%22:%22AutoVault%22,%22short_name%22:%22AutoVault%22,%22start_url%22:%22.%22,%22display%22:%22standalone%22,%22background_color%22:%22#0f172a%22,%22theme_color%22:%22#2563eb%22}" />
+  <script src="https://unpkg.com/html5-qrcode"></script>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --accent: #3b82f6;
+      --text: #f8fafc;
+      --subtext: #94a3b8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background-color: var(--bg); color: var(--text); padding-bottom: 80px; }
+    
+    header {
+      background: #1e293b;
+      padding: 1rem;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #334155;
+    }
+    header h1 { font-size: 1.25rem; font-weight: bold; color: var(--accent); }
+    .btn-install { background: var(--accent); color: white; border: none; padding: 0.5rem 1rem; border-radius: 20px; font-weight: 600; cursor: pointer; display: none; }
+    
+    .container { padding: 1rem; max-width: 1200px; margin: 0 auto; }
+    
+    /* Search Bar */
+    .search-box { width: 100%; padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid #334155; background: #1e293b; color: white; margin-bottom: 1rem; }
+
+    /* Grid */
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
+    .card { background: var(--card-bg); border-radius: 12px; overflow: hidden; border: 1px solid #334155; transition: transform 0.2s; }
+    .card:active { transform: scale(0.98); }
+    .card img { width: 100%; height: 180px; object-fit: cover; }
+    .card-content { padding: 1rem; }
+    .card-title { font-size: 1.1rem; font-weight: bold; margin-bottom: 0.25rem; }
+    .color-badge { display: inline-block; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; background: #334155; margin-bottom: 0.5rem; }
+    .card-desc { font-size: 0.85rem; color: var(--subtext); margin-bottom: 0.75rem; }
+    
+    /* Scanner & Add Modal */
+    .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 200; justify-content: center; align-items: center; padding: 1rem; }
+    .modal-content { background: var(--card-bg); width: 100%; max-width: 500px; border-radius: 12px; padding: 1.5rem; max-height: 90vh; overflow-y: auto; }
+    .close-btn { float: right; font-size: 1.5rem; cursor: pointer; }
+
+    /* Bottom Nav */
+    .nav { position: fixed; bottom: 0; left: 0; right: 0; background: #1e293b; display: flex; justify-content: space-around; padding: 0.75rem 0; border-top: 1px solid #334155; }
+    .nav-item { color: var(--subtext); text-decoration: none; font-size: 0.8rem; display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; }
+    .nav-item.active { color: var(--accent); }
+
+    /* Form controls */
+    input, textarea { width: 100%; padding: 0.5rem; margin-top: 0.5rem; margin-bottom: 1rem; background: #0f172a; border: 1px solid #334155; color: white; border-radius: 6px; }
+    button.submit-btn { width: 100%; background: var(--accent); color: white; border: none; padding: 0.75rem; border-radius: 6px; font-weight: bold; cursor: pointer; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>🚗 AutoVault</h1>
+    <button id="installBtn" class="btn-install">Install App</button>
+  </header>
+
+  <div class="container">
+    <input type="text" id="searchInput" class="search-box" placeholder="Search car model, color, or specs..." onkeyup="filterCars()">
+    <div id="carGrid" class="grid"></div>
+  </div>
+
+  <!-- QR Reader Modal -->
+  <div id="scannerModal" class="modal">
+    <div class="modal-content">
+      <span class="close-btn" onclick="closeModals()">&times;</span>
+      <h2 style="margin-bottom: 1rem;">Scan / Upload QR</h2>
+      <div id="reader" style="width: 100%;"></div>
+      <p style="text-align: center; margin: 1rem 0; color: var(--subtext);">OR</p>
+      <input type="file" id="qrFileInput" accept="image/*" onchange="scanQRFromFile(event)">
+    </div>
+  </div>
+
+  <!-- Add Car Modal -->
+  <div id="addModal" class="modal">
+    <div class="modal-content">
+      <span class="close-btn" onclick="closeModals()">&times;</span>
+      <h2>Add Custom Car</h2>
+      <form id="addCarForm" onsubmit="handleAddCar(event)">
+        <label>Car Model Name</label>
+        <input type="text" id="carModel" required placeholder="e.g. Porsche 911 GT3">
+        <label>Color</label>
+        <input type="text" id="carColor" required placeholder="e.g. Shark Blue">
+        <label>Image URL</label>
+        <input type="url" id="carImage" required placeholder="https://images.unsplash.com/...">
+        <label>Description & Specs</label>
+        <textarea id="carDesc" rows="3" required placeholder="Engine specs, top speed, etc."></textarea>
+        <button type="submit" class="submit-btn">Add to Vault</button>
+      </form>
+    </div>
+  </div>
+
+  <nav class="nav">
+    <div class="nav-item active" onclick="showCatalog()"><span>🚗</span>Catalog</div>
+    <div class="nav-item" onclick="openScanner()"><span>📷</span>Scan QR</div>
+    <div class="nav-item" onclick="openAddModal()"><span>➕</span>Add Car</div>
+  </nav>
+
+  <script>
+    // 10 Pre-loaded Real Cars
+    const initialCars = [
+      { id: "car1", model: "Tesla Model S Plaid", color: "Deep Crimson Red", img: "https://images.unsplash.com/photo-1617788138017-80ad40651399?w=600", desc: "1,020 hp tri-motor setup. 0-60 mph in 1.99s. Top Speed: 200 mph." },
+      { id: "car2", model: "Porsche 911 GT3 RS", color: "Lizard Green", img: "https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?w=600", desc: "4.0L naturally aspirated flat-6 producing 518 hp with extreme track aerodynamics." },
+      { id: "car3", model: "Lamborghini Huracán EVO", color: "Verde Mantis", img: "https://images.unsplash.com/photo-1544829099-b9a0c07fad1a?w=600", desc: "5.2L V10 engine delivering 631 hp with all-wheel steering." },
+      { id: "car4", model: "BMW M4 Competition", color: "Isle of Man Green", img: "https://images.unsplash.com/photo-1555215695-3004980ad54e?w=600", desc: "3.0L Twin-Turbo Inline-6 with 503 hp and M xDrive AWD system." },
+      { id: "car5", model: "Audi R8 V10 Performance", color: "Daytona Gray", img: "https://images.unsplash.com/photo-1603584173870-7f23fdae1b7a?w=600", desc: "Mid-engine supercar featuring a 602 hp atmospheric V10." },
+      { id: "car6", model: "Ford Mustang Shelby GT500", color: "Velocity Blue", img: "https://images.unsplash.com/photo-1584345604476-8ec5e12e42dd?w=600", desc: "Supercharged 5.2L V8 putting out 760 hp with a 7-speed dual-clutch transmission." },
+      { id: "car7", model: "Chevrolet Corvette Z06", color: "Torch Red", img: "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=600", desc: "Flat-plane crank 5.5L LT6 V8 generating 670 hp at 8,400 RPM." },
+      { id: "car8", model: "Ferrari F8 Tributo", color: "Rosso Corsa", img: "https://images.unsplash.com/photo-1583121274602-3e2820c69888?w=600", desc: "Twin-turbocharged 3.9L V8 pumping out 710 hp." },
+      { id: "car9", model: "Mercedes-AMG GT Black Series", color: "Magno Orange", img: "https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?w=600", desc: "Flat-plane V8 twin-turbo producing 720 hp with race-grade carbon aero." },
+      { id: "car10", model: "Nissan GT-R Nismo", color: "Pearl White", img: "https://images.unsplash.com/photo-1600712242805-5f78671b24da?w=600", desc: "Handcrafted 3.8L Twin-Turbo V8 with 600 hp and advanced ATTESA E-TS AWD." }
+    ];
+
+    let cars = JSON.parse(localStorage.getItem('custom_cars')) || initialCars;
+    let html5QrcodeScanner = null;
+
+    function renderCars(data) {
+      const grid = document.getElementById('carGrid');
+      grid.innerHTML = data.map(car => `
+        <div class="card" id="${car.id}">
+          <img src="${car.img}" alt="${car.model}" loading="lazy">
+          <div class="card-content">
+            <div class="card-title">${car.model}</div>
+            <span class="color-badge">Color: ${car.color}</span>
+            <div class="card-desc">${car.desc}</div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function filterCars() {
+      const query = document.getElementById('searchInput').value.toLowerCase();
+      const filtered = cars.filter(c => 
+        c.model.toLowerCase().includes(query) || 
+        c.color.toLowerCase().includes(query) || 
+        c.desc.toLowerCase().includes(query)
+      );
+      renderCars(filtered);
+    }
+
+    /* Modal Handlers */
+    function openScanner() {
+      document.getElementById('scannerModal').style.display = 'flex';
+      if (!html5QrcodeScanner) {
+        html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
+        html5QrcodeScanner.render(onScanSuccess);
+      }
+    }
+
+    function scanQRFromFile(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const html5QrCode = new Html5Qrcode("reader");
+      html5QrCode.scanFile(file, true)
+        .then(decodedText => onScanSuccess(decodedText))
+        .catch(err => alert("Could not read QR code from image: " + err));
+    }
+
+    function onScanSuccess(decodedText) {
+      closeModals();
+      const match = cars.find(c => c.id === decodedText || c.model.toLowerCase() === decodedText.toLowerCase());
+      if (match) {
+        document.getElementById('searchInput').value = match.model;
+        filterCars();
+        document.getElementById(match.id)?.scrollIntoView({ behavior: 'smooth' });
+      } else {
+        alert("Scanned Code Result: " + decodedText);
+      }
+    }
+
+    function openAddModal() { document.getElementById('addModal').style.display = 'flex'; }
+    function closeModals() {
+      document.getElementById('scannerModal').style.display = 'none';
+      document.getElementById('addModal').style.display = 'none';
+      if(html5QrcodeScanner) { html5QrcodeScanner.clear(); html5QrcodeScanner = null; }
+    }
+
+    function handleAddCar(e) {
+      e.preventDefault();
+      const newCar = {
+        id: 'car_' + Date.now(),
+        model: document.getElementById('carModel').value,
+        color: document.getElementById('carColor').value,
+        img: document.getElementById('carImage').value,
+        desc: document.getElementById('carDesc').value
+      };
+      cars.unshift(newCar);
+      localStorage.setItem('custom_cars', JSON.stringify(cars));
+      renderCars(cars);
+      closeModals();
+      e.target.reset();
+    }
+
+    /* Progressive Web App Install Prompt */
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      const installBtn = document.getElementById('installBtn');
+      installBtn.style.display = 'block';
+      installBtn.addEventListener('click', () => {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then(() => { installBtn.style.display = 'none'; });
+      });
+    });
+
+    renderCars(cars);
+  </script>
+</body>
+</html>
