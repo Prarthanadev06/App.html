@@ -406,7 +406,7 @@
     }
 
     // =========================================================================
-    // UPLOAD & AI RECOGNITION SECTION (Fixed Red Audi & Yellow Mercedes info)
+    // UPLOAD & AI RECOGNITION SECTION (Strict pixel isolation for Audi & Yellow Mercedes)
     // =========================================================================
     function autoRecognizeCar(event) {
       const file = event.target.files[0];
@@ -432,23 +432,23 @@
           const g = pData[i+1];
           const b = pData[i+2];
 
-          // 1. Red or Maroon pixel check -> Audi R8
+          // 1. Precise Red/Maroon check for Audi R8 (R > 90, G < 60, B < 60)
           if (r > 90 && g < 60 && b < 60) {
             redPixels++;
           }
-          // 2. Yellow pixel check -> Yellow Mercedes
+          // 2. Precise Yellow check for Mercedes (R > 150, G > 120, B < 70)
           else if (r > 150 && g > 120 && b < 70) {
             yellowPixels++;
           }
-          // 3. Black/Dark pixel check -> Rolls-Royce Wraith
+          // 3. Black/Dark check for Rolls-Royce
           else if (r < 50 && g < 50 && b < 50) {
             darkPixels++;
           }
-          // 4. Cyan pixel check -> Cyan Mercedes
+          // 4. Cyan check for Mercedes
           else if (b > r + 10 && g > r - 10) {
             cyanPixels++;
           }
-          // 5. White/Light pixel check -> BMW M8
+          // 5. White check for BMW
           else if (r > 160 && g > 160 && b > 160) {
             whitePixels++;
           }
@@ -473,17 +473,15 @@
         let matchedKey = "AUDI_R8";
         let matchedCar = {};
 
-        // Switch statement mapping detected type to correct upload name and properly populated info
-        // ONLY CHANGED: case "AUDI" and case "MERCEDES_YELLOW"
         switch (detectedType) {
           case "AUDI":
             matchedKey = "AUDI_R8";
             matchedCar = { ...cars[matchedKey] };
-            matchedCar.name = "Audi R8 V10 Performance"; // Fixed Name
-            matchedCar.color = "Maroon Red"; // Fixed Color Name
-            matchedCar.hp = "602 hp"; // Fixed HP
-            matchedCar.speed = "205 mph"; // Fixed Speed
-            matchedCar.specs = "Naturally aspirated 5.2L V10 with Quattro AWD"; // Fixed Specs
+            matchedCar.name = "Audi R8 V10 Performance";
+            matchedCar.color = "Maroon Red";
+            matchedCar.hp = "602 hp";
+            matchedCar.speed = "205 mph";
+            matchedCar.specs = "Naturally aspirated 5.2L V10 with Quattro AWD";
             break;
           case "RR":
             matchedKey = "ROLLS_ROYCE_WHITE";
@@ -506,11 +504,11 @@
           case "MERCEDES_YELLOW":
             matchedKey = "MERCEDES_CYAN";
             matchedCar = { ...cars[matchedKey] };
-            matchedCar.name = "Mercedes-AMG GT S"; // Fixed Name
-            matchedCar.color = "Yellow"; // Fixed Color Name
-            matchedCar.hp = "515 hp"; // Fixed HP
-            matchedCar.speed = "193 mph"; // Fixed Speed
-            matchedCar.specs = "4.0L V8 Biturbo high-performance coupe"; // Fixed Specs
+            matchedCar.name = "Mercedes-AMG GT S";
+            matchedCar.color = "Yellow";
+            matchedCar.hp = "515 hp";
+            matchedCar.speed = "193 mph";
+            matchedCar.specs = "4.0L V8 Biturbo high-performance coupe";
             break;
           case "BMW":
             matchedKey = "BMW_M8";
