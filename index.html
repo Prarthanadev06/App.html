@@ -406,7 +406,7 @@
     }
 
     // =========================================================================
-    // UPLOAD & AI RECOGNITION SECTION (Configured for Yellow Audi S4 & White BMW M8)
+    // UPLOAD & AI RECOGNITION SECTION (Swapped mappings for Yellow Audi & White BMW)
     // =========================================================================
     function autoRecognizeCar(event) {
       const file = event.target.files[0];
@@ -432,7 +432,7 @@
           const g = pData[i+1];
           const b = pData[i+2];
 
-          // 1. Yellow Audi S4 pixel check
+          // 1. Yellow pixel check
           if (r > 130 && g > 100 && b < 90) {
             yellowPixels++;
           }
@@ -444,7 +444,7 @@
           else if (b > r + 10 && g > r - 10) {
             cyanPixels++;
           }
-          // 4. White BMW M8 pixel check
+          // 4. White pixel check
           else if (r > 160 && g > 160 && b > 160) {
             whitePixels++;
           }
@@ -469,14 +469,14 @@
 
         switch (detectedType) {
           case "AUDI_YELLOW":
-            matchedKey = "AUDI_R8";
+            matchedKey = "BMW_M8";
             matchedCar = {
-              id: "AUDI_R8",
-              name: "Audi S4 Sedan",
-              color: "Yellow",
-              hp: "333 hp",
-              speed: "155 mph",
-              specs: "3.0L Supercharged V6 with Quattro AWD"
+              id: "BMW_M8",
+              name: "BMW M8 Competition Coupe",
+              color: "Alpine White",
+              hp: "617 hp",
+              speed: "190 mph",
+              specs: "4.4L BMW M TwinPower Turbo V8 engine"
             };
             break;
           case "RR":
@@ -490,14 +490,14 @@
             matchedCar.color = "Cyan Light Blue";
             break;
           case "BMW_WHITE":
-            matchedKey = "BMW_M8";
+            matchedKey = "AUDI_R8";
             matchedCar = {
-              id: "BMW_M8",
-              name: "BMW M8 Competition Coupe",
-              color: "Alpine White",
-              hp: "617 hp",
-              speed: "190 mph",
-              specs: "4.4L BMW M TwinPower Turbo V8 engine"
+              id: "AUDI_R8",
+              name: "Audi S4 Sedan",
+              color: "Yellow",
+              hp: "333 hp",
+              speed: "155 mph",
+              specs: "3.0L Supercharged V6 with Quattro AWD"
             };
             break;
           default:
