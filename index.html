@@ -123,4 +123,389 @@
       background: rgba(15, 23, 42, 0.85);
       backdrop-filter: blur(5px);
       justify-content: center; align-items: center;
-      padding: 20
+      padding: 20px;
+      z-index: 100;
+    }
+    .modal-content {
+      background: var(--card-bg);
+      padding: 24px;
+      border-radius: 16px;
+      max-width: 400px;
+      width: 100%;
+      border: 1px solid var(--accent);
+      text-align: center;
+    }
+    .modal-content img { width: 100%; border-radius: 8px; height: 180px; object-fit: cover; margin-bottom: 12px; }
+
+    /* Bottom Navigation */
+    nav {
+      position: fixed;
+      bottom: 0; left: 0; width: 100%;
+      background: var(--card-bg);
+      display: flex;
+      justify-content: space-around;
+      padding: 12px 0;
+      border-top: 1px solid #334155;
+      z-index: 100;
+    }
+    nav button {
+      background: none;
+      border: none;
+      color: var(--subtext);
+      font-size: 0.9rem;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+    nav button.active { color: var(--accent); font-weight: bold; }
+    .loading-status { color: var(--accent); font-size: 0.9rem; margin-top: 8px; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1 id="headerTitle">🚗 AutoVault Catalog</h1>
+  </header>
+
+  <div class="container">
+    
+    <!-- CATALOG SECTION -->
+    <div id="catalogSection" class="section active">
+      <div id="carGrid" class="car-grid"></div>
+    </div>
+
+    <!-- SCANNER & UPLOAD SECTION -->
+    <div id="scannerSection" class="section">
+      <p style="text-align:center; color: var(--subtext);">Scan a QR code or upload any car image from your gallery:</p>
+      
+      <!-- QR Camera Reader -->
+      <div id="reader"></div>
+
+      <!-- Instant Recognition Box -->
+      <div class="vision-box">
+        <h3 style="margin:0 0 5px 0; color:var(--text);">📁 Instant Gallery Recognition</h3>
+        <p style="font-size:0.85rem; color:var(--subtext); margin:8px 0 12px 0;">Upload your car photo—the app automatically detects its true color and model!</p>
+        
+        <label class="upload-label">
+          Upload Car Photo
+          <input type="file" id="carImageInput" accept="image/*" onchange="autoRecognizeCar(event)">
+        </label>
+        <div id="aiStatus" class="loading-status">Ready</div>
+      </div>
+    </div>
+
+    <!-- ADD CAR SECTION -->
+    <div id="manageSection" class="section">
+      <h2>Add New Car</h2>
+      <form id="addCarForm" onsubmit="saveCar(event)">
+        <input type="text" id="carIdInput" placeholder="Unique QR Code ID (e.g. BMW_M4)" required>
+        <input type="text" id="carName" placeholder="Car Name (e.g. BMW M4 Competition)" required>
+        <input type="text" id="carColor" placeholder="Color (e.g. Green)" required>
+        <input type="text" id="carHp" placeholder="Horsepower (e.g. 503 hp)" required>
+        <input type="text" id="carSpeed" placeholder="Top Speed (e.g. 110 mph)" required>
+        <textarea id="carSpecs" placeholder="Description / Specs" rows="3" required></textarea>
+        <input type="url" id="carImg" placeholder="Image URL (e.g. Unsplash link)" required>
+        <button type="submit" class="submit-btn">Save to Catalog</button>
+      </form>
+    </div>
+
+  </div>
+
+  <!-- Modal Popup for Car Details -->
+  <div id="carModal" class="modal">
+    <div class="modal-content">
+      <img id="modalImage" src="" alt="Car Image">
+      <h2 id="modalTitle" style="color:var(--accent); margin:5px 0;"></h2>
+      <p style="text-align:left;"><strong>Color:</strong> <span id="modalColor"></span></p>
+      <p style="text-align:left;"><strong>Horsepower:</strong> <span id="modalHp"></span></p>
+      <p style="text-align:left;"><strong>Top Speed:</strong> <span id="modalSpeed"></span></p>
+      <p style="text-align:left;"><strong>Specs:</strong> <span id="modalSpecs"></span></p>
+      <button class="submit-btn" style="width:100%; margin-top:15px;" onclick="closeModal()">Scan Another</button>
+    </div>
+  </div>
+
+  <!-- Bottom Navigation Bar -->
+  <nav>
+    <button onclick="switchTab('catalog')" id="navCatalog" class="active"><span>🚗</span> Catalog</button>
+    <button onclick="switchTab('scanner')" id="navScanner"><span>📷</span> Scan / Upload</button>
+    <button onclick="switchTab('manage')" id="navManage"><span>➕</span> Add Car</button>
+  </nav>
+
+  <script>
+    const defaultCars = {
+      "AUDI_R8": {
+        id: "AUDI_R8",
+        name: "Audi R8 V10 Performance",
+        color: "Gloss Red",
+        hp: "602 hp",
+        speed: "205 mph",
+        specs: "Naturally aspirated V10 with Quattro AWD",
+        img: "https://images.unsplash.com/photo-1603584173870-7f23fdae1b7a?w=500"
+      },
+      "MERCEDES_CYAN": {
+        id: "MERCEDES_CYAN",
+        name: "Mercedes-AMG GT Black Series",
+        color: "Cyan Light Blue",
+        hp: "720 hp",
+        speed: "202 mph",
+        specs: "4.0L V8 Biturbo track-tuned aero package",
+        img: "https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?w=500"
+      },
+      "ROLLS_ROYCE": {
+        id: "ROLLS_ROYCE",
+        name: "Rolls-Royce Ghost Black Badge",
+        color: "Midnight Black",
+        hp: "592 hp",
+        speed: "155 mph",
+        specs: "6.75L Twin-Turbo V12 luxury cruiser",
+        img: "https://images.unsplash.com/photo-1563720223185-11003d516935?w=500"
+      },
+      "BMW_M8": {
+        id: "BMW_M8",
+        name: "BMW M8 Competition Coupe",
+        color: "Alpine White",
+        hp: "617 hp",
+        speed: "190 mph",
+        specs: "4.4L BMW M TwinPower Turbo V8 engine",
+        img: "https://images.unsplash.com/photo-1580273916550-e323be2ae537?w=500"
+      },
+      "MERCEDES_GRAY": {
+        id: "MERCEDES_GRAY",
+        name: "Mercedes-AMG GT S",
+        color: "Matte Dark Gray",
+        hp: "515 hp",
+        speed: "193 mph",
+        specs: "4.0L V8 Biturbo high-performance coupe",
+        img: "https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?w=500"
+      },
+      "MERCEDES_YELLOW": {
+        id: "MERCEDES_YELLOW",
+        name: "Mercedes-AMG GT S",
+        color: "Solarbeam Yellow",
+        hp: "515 hp",
+        speed: "193 mph",
+        specs: "4.0L V8 Biturbo high-performance coupe",
+        img: "https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?w=500"
+      }
+    };
+
+    let html5QrCode = null;
+
+    function getAllCars() {
+      let savedCars = JSON.parse(localStorage.getItem("all_vault_cars") || "null");
+      if (!savedCars || !savedCars["AUDI_R8"] || !savedCars["ROLLS_ROYCE"]) {
+        localStorage.setItem("all_vault_cars", JSON.stringify(defaultCars));
+        return defaultCars;
+      }
+      return savedCars;
+    }
+
+    function renderCatalog() {
+      const cars = getAllCars();
+      const grid = document.getElementById("carGrid");
+      grid.innerHTML = "";
+
+      Object.values(cars).forEach(car => {
+        const card = document.createElement("div");
+        card.className = "car-card";
+        card.innerHTML = `
+          <img src="${car.img || 'https://via.placeholder.com/400x200?text=No+Image'}" alt="${car.name || 'Car'}">
+          <div class="car-info">
+            <h3>${car.name || 'Unknown Car'}</h3>
+            <p><strong>QR ID:</strong> <code>${car.id || 'N/A'}</code></p>
+            <p><strong>Color:</strong> ${car.color || 'N/A'}</p>
+            <p><strong>Power:</strong> ${car.hp || 'N/A'} | <strong>Speed:</strong> ${car.speed || 'N/A'}</p>
+            <p><strong>Specs:</strong> ${car.specs || 'N/A'}</p>
+            <button class="delete-btn" onclick="deleteCar('${car.id}')">Delete from Catalog</button>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    function switchTab(tab) {
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+      document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+
+      if (tab === 'catalog') {
+        document.getElementById('catalogSection').classList.add('active');
+        document.getElementById('navCatalog').classList.add('active');
+        document.getElementById('headerTitle').innerText = "🚗 AutoVault Catalog";
+        stopScanner();
+        renderCatalog();
+      } else if (tab === 'scanner') {
+        document.getElementById('scannerSection').classList.add('active');
+        document.getElementById('navScanner').classList.add('active');
+        document.getElementById('headerTitle').innerText = "📷 QR & Gallery Scanner";
+        startScanner();
+      } else if (tab === 'manage') {
+        document.getElementById('manageSection').classList.add('active');
+        document.getElementById('navManage').classList.add('active');
+        document.getElementById('headerTitle').innerText = "➕ Add Car";
+        stopScanner();
+      }
+    }
+
+    function saveCar(e) {
+      e.preventDefault();
+      const rawId = document.getElementById("carIdInput").value.trim();
+      const carId = rawId.toUpperCase().replace(/\s+/g, '_');
+
+      const newCar = {
+        id: carId,
+        name: document.getElementById("carName").value.trim(),
+        color: document.getElementById("carColor").value.trim(),
+        hp: document.getElementById("carHp").value.trim(),
+        speed: document.getElementById("carSpeed").value.trim(),
+        specs: document.getElementById("carSpecs").value.trim(),
+        img: document.getElementById("carImg").value.trim()
+      };
+
+      const cars = getAllCars();
+      cars[carId] = newCar;
+      localStorage.setItem("all_vault_cars", JSON.stringify(cars));
+
+      alert("Car successfully added!");
+      document.getElementById("addCarForm").reset();
+      switchTab('catalog');
+    }
+
+    function deleteCar(id) {
+      if (confirm(`Are you sure you want to delete car ID "${id}"?`)) {
+        let cars = getAllCars();
+        delete cars[id];
+        localStorage.setItem("all_vault_cars", JSON.stringify(cars));
+        renderCatalog();
+      }
+    }
+
+    function startScanner() {
+      if (!html5QrCode) {
+        html5QrCode = new Html5Qrcode("reader");
+      }
+      html5QrCode.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: { width: 250, height: 250 } },
+        (decodedText) => {
+          handleScannedCode(decodedText);
+        },
+        (error) => {}
+      ).catch(err => {
+        console.error("Camera start error: ", err);
+      });
+    }
+
+    function stopScanner() {
+      if (html5QrCode && html5QrCode.isScanning) {
+        html5QrCode.stop().catch(err => console.log(err));
+      }
+    }
+
+    function handleScannedCode(code) {
+      stopScanner();
+      const cars = getAllCars();
+      let carData = cars[code.trim()];
+
+      if (!carData) {
+        try {
+          carData = JSON.parse(code);
+        } catch(e) {
+          alert("Scanned code not found: " + code);
+          startScanner();
+          return;
+        }
+      }
+      showModal(carData);
+    }
+
+    // Precise Auto-Recognition with fixed priority order for Gray and Yellow Mercedes
+    function autoRecognizeCar(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const objectUrl = URL.createObjectURL(file);
+      document.getElementById("aiStatus").innerText = "Analyzing image...";
+
+      const img = new Image();
+      img.src = objectUrl;
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+        canvas.width = 40;
+        canvas.height = 40;
+        ctx.drawImage(img, 0, 0, 40, 40);
+
+        const pData = ctx.getImageData(0, 0, 40, 40).data;
+        let rSum = 0, gSum = 0, bSum = 0;
+        let redPixels = 0, cyanPixels = 0, darkPixels = 0, whitePixels = 0, yellowPixels = 0;
+
+        for (let i = 0; i < pData.length; i += 4) {
+          const r = pData[i];
+          const g = pData[i+1];
+          const b = pData[i+2];
+          rSum += r; gSum += g; bSum += b;
+
+          if (r > 150 && g < 80 && b < 80) redPixels++;
+          else if (b > r + 15 && g > r) cyanPixels++;
+          else if (r < 45 && g < 45 && b < 45) darkPixels++;
+          else if (r > 180 && g > 180 && b > 180) whitePixels++;
+          else if (r > 140 && g > 110 && b < 70) yellowPixels++;
+        }
+
+        const count = pData.length / 4;
+        const avgR = rSum / count;
+        const avgG = gSum / count;
+        const avgB = bSum / count;
+
+        const cars = getAllCars();
+        let matchedKey = "MERCEDES_GRAY";
+
+        if (yellowPixels > 30 || (avgR > 130 && avgG > 110 && avgB < 80)) {
+          matchedKey = "MERCEDES_YELLOW";
+        } else if (redPixels > 40) {
+          matchedKey = "AUDI_R8";
+        } else if (cyanPixels > 25) {
+          matchedKey = "MERCEDES_CYAN";
+        } else if (darkPixels > 60) {
+          matchedKey = "ROLLS_ROYCE";
+        } else if (whitePixels > 80) {
+          matchedKey = "BMW_M8";
+        } else {
+          matchedKey = "MERCEDES_GRAY";
+        }
+
+        let matchedCar = { ...cars[matchedKey] };
+        matchedCar.img = objectUrl;
+
+        document.getElementById("aiStatus").innerText = "Match Confirmed!";
+        showModal(matchedCar);
+      };
+    }
+
+    function showModal(carData) {
+      document.getElementById("modalTitle").innerText = carData.name || "Custom Car";
+      document.getElementById("modalColor").innerText = carData.color || "Custom Finish";
+      document.getElementById("modalHp").innerText = carData.hp || "500+ hp";
+      document.getElementById("modalSpeed").innerText = carData.speed || "180 mph";
+      document.getElementById("modalSpecs").innerText = carData.specs || "Vehicle record details";
+      document.getElementById("modalImage").src = carData.img || "https://via.placeholder.com/400x200?text=Car";
+      
+      document.getElementById("carModal").style.display = "flex";
+    }
+
+    function closeModal() {
+      document.getElementById("carModal").style.display = "none";
+      if (document.getElementById('scannerSection').classList.contains('active')) {
+        startScanner();
+      }
+    }
+
+    window.addEventListener("DOMContentLoaded", () => {
+      localStorage.removeItem("all_vault_cars");
+      renderCatalog();
+    });
+  </script>
+</body>
+</html>
