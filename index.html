@@ -422,11 +422,8 @@
     }
 
     // =========================================================================
-    // UPLOAD & AI RECOGNITION SECTION MAPPING LOGIC
-    // Highlight pixel filters mapped to each car:
-    // - Highlight: ORANGE Pixel Threshold -> AUDI_R8 (Orange)
-    // - Highlight: CYAN Pixel Threshold -> MERCEDES_CYAN (Cyan Light Blue)
-    // - Highlight: WHITE Pixel Threshold -> ROLLS_ROYCE_WHITE (White)[span_0](start_span)[span_0](end_span)
+    // UPLOAD & AI RECOGNITION SECTION (Switch Statement Logic)
+    // Checks pixel colors: Red/Maroon -> Audi, Black -> Rolls-Royce, White -> BMW
     // =========================================================================
     function autoRecognizeCar(event) {
       const file = event.target.files[0];
@@ -445,32 +442,63 @@
         ctx.drawImage(img, 0, 0, 40, 40);
 
         const pData = ctx.getImageData(0, 0, 40, 40).data;
-        let orangePixels = 0, cyanPixels = 0, whitePixels = 0;
+        let redPixels = 0, darkPixels = 0, whitePixels = 0, cyanPixels = 0;
 
         for (let i = 0; i < pData.length; i += 4) {
           const r = pData[i];
           const g = pData[i+1];
           const b = pData[i+2];
 
-          // Highlight rule: ORANGE car profile detection
-          if (r > 160 && g > 80 && g < 150 && b < 50) orangePixels++;
-          // Highlight rule: CYAN car profile detection
-          else if (b > r + 10 && g > r - 10) cyanPixels++;
-          // Highlight rule: WHITE car profile detection
-          else if (r > 170 && g > 170 && b > 170) whitePixels++;
+          // Red or maroon check
+          if (r > 100 && g < 60 && b < 60) {
+            redPixels++;
+          }
+          // Black check
+          else if (r < 50 && g < 50 && b < 50) {
+            darkPixels++;
+          }
+          // White check
+          else if (r > 170 && g > 170 && b > 170) {
+            whitePixels++;
+          }
+          // Cyan check
+          else if (b > r + 10 && g > r - 10) {
+            cyanPixels++;
+          }
+        }
+
+        // Determine dominant color type
+        let detectedType = "AUDI";
+        if (darkPixels > redPixels && darkPixels > whitePixels && darkPixels > cyanPixels) {
+          detectedType = "RR";
+        } else if (whitePixels > redPixels && whitePixels > darkPixels && whitePixels > cyanPixels) {
+          detectedType = "BMW";
+        } else if (cyanPixels > redPixels && cyanPixels > darkPixels && cyanPixels > whitePixels) {
+          detectedType = "MERCEDES";
+        } else if (redPixels > darkPixels && redPixels > whitePixels) {
+          detectedType = "AUDI";
         }
 
         const cars = getAllCars();
         let matchedKey = "AUDI_R8";
 
-        if (orangePixels > 25) {
-          matchedKey = "AUDI_R8";
-        } else if (cyanPixels > 25) {
-          matchedKey = "MERCEDES_CYAN";
-        } else if (whitePixels > 60) {
-          matchedKey = "ROLLS_ROYCE_WHITE";
-        } else {
-          matchedKey = "AUDI_R8";
+        // Switch statement handling recognition matching
+        switch (detectedType) {
+          case "AUDI":
+            matchedKey = "AUDI_R8";
+            break;
+          case "RR":
+            matchedKey = "ROLLS_ROYCE_WHITE";
+            break;
+          case "BMW":
+            matchedKey = "BMW_M8";
+            break;
+          case "MERCEDES":
+            matchedKey = "MERCEDES_CYAN";
+            break;
+          default:
+            matchedKey = "AUDI_R8";
+            break;
         }
 
         let matchedCar = { ...cars[matchedKey] };
@@ -505,4 +533,4 @@
     });
   </script>
 </body>
-  </html>
+</html>
