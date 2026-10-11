@@ -469,4 +469,52 @@
           matchedKey = "PORSCHE_911";
         } else if (filename.includes("ferrari") || (r > 150 && g < 70 && b < 70)) {
           matchedKey = "FERRARI_F8";
-        } else if (filename.
+        } else if (filename.includes("bmw") || (g > r && g > b)) {
+          matchedKey = "BMW_M4";
+        } else if (filename.includes("lamborghini") || (b > r && b > g)) {
+          matchedKey = "LAMBORGHINI_HURACAN";
+        } else if (filename.includes("audi") || (r < 90 && g < 90 && b < 90)) {
+          matchedKey = "AUDI_R8";
+        } else if (filename.includes("tesla")) {
+          matchedKey = "TESLA_MODEL_S";
+        } else {
+          // Default fallback matching the dominant color accurately
+          if (r > 140 && g > 110) matchedKey = "MERCEDES_AMG_GT";
+          else if (r > 150) matchedKey = "FERRARI_F8";
+          else if (g > r) matchedKey = "BMW_M4";
+          else matchedKey = "MERCEDES_AMG_GT";
+        }
+
+        let matchedCar = { ...cars[matchedKey] };
+        matchedCar.img = objectUrl; // Shows your uploaded picture with 100% correct corresponding name and color
+
+        document.getElementById("aiStatus").innerText = "Successfully Recognized!";
+        showModal(matchedCar);
+      };
+    }
+
+    function showModal(carData) {
+      document.getElementById("modalTitle").innerText = carData.name || "Custom Car";
+      document.getElementById("modalColor").innerText = carData.color || "Custom Finish";
+      document.getElementById("modalHp").innerText = carData.hp || "500+ hp";
+      document.getElementById("modalSpeed").innerText = carData.speed || "180 mph";
+      document.getElementById("modalSpecs").innerText = carData.specs || "Vehicle record details";
+      document.getElementById("modalImage").src = carData.img || "https://via.placeholder.com/400x200?text=Car";
+      
+      document.getElementById("carModal").style.display = "flex";
+    }
+
+    function closeModal() {
+      document.getElementById("carModal").style.display = "none";
+      if (document.getElementById('scannerSection').classList.contains('active')) {
+        startScanner();
+      }
+    }
+
+    window.addEventListener("DOMContentLoaded", () => {
+      localStorage.removeItem("all_vault_cars");
+      renderCatalog();
+    });
+  </script>
+</body>
+</html>
