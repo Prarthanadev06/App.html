@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AutoVault - Precision Car Recognition</title>
+  <title>AutoVault - Exact Match Car Catalog</title>
   
   <!-- Include HTML5-QRCode Library -->
   <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
@@ -97,7 +97,7 @@
 
     /* Forms */
     form { display: flex; flex-direction: column; gap: 12px; background: var(--card-bg); padding: 20px; border-radius: 12px; border: 1px solid #334155; }
-    input, textarea {
+    input, textarea, select {
       padding: 12px;
       border-radius: 8px;
       border: 1px solid #475569;
@@ -183,14 +183,23 @@
       <!-- QR Camera Reader -->
       <div id="reader"></div>
 
-      <!-- Precision Upload Box -->
+      <!-- Exact Match Selection Box -->
       <div class="vision-box">
-        <h3 style="margin:0 0 5px 0; color:var(--text);">📁 Precision Gallery Recognition</h3>
-        <p style="font-size:0.85rem; color:var(--subtext); margin:8px 0 12px 0;">Upload any of your target car photos for instant 100% accurate match!</p>
+        <h3 style="margin:0 0 5px 0; color:var(--text);">📁 Perfect Match Upload</h3>
+        <p style="font-size:0.85rem; color:var(--subtext); margin:8px 0 10px 0;">Select the exact car model from your list so the name & color are 100% accurate:</p>
         
+        <select id="exactCarSelector" style="width:100%; margin-bottom:12px;">
+          <option value="AUDI_R8_RED">Red Audi R8 V10</option>
+          <option value="MERCEDES_CYAN">Cyan Light Blue Mercedes-AMG GT</option>
+          <option value="ROLLS_ROYCE">Midnight Black Rolls-Royce Ghost</option>
+          <option value="BMW_M8_WHITE">Alpine White BMW M8 Coupe</option>
+          <option value="MERCEDES_GRAY">Matte Dark Gray Mercedes-AMG GT S</option>
+          <option value="MERCEDES_YELLOW">Solarbeam Yellow Mercedes-AMG GT S</option>
+        </select>
+
         <label class="upload-label">
-          Upload Car Photo
-          <input type="file" id="carImageInput" accept="image/*" onchange="precisionCarRecognition(event)">
+          Upload Photo & Get Exact Info
+          <input type="file" id="carImageInput" accept="image/*" onchange="handleExactUpload(event)">
         </label>
         <div id="aiStatus" class="loading-status">Ready</div>
       </div>
@@ -235,8 +244,8 @@
 
   <script>
     const defaultCars = {
-      "AUDI_R8": {
-        id: "AUDI_R8",
+      "AUDI_R8_RED": {
+        id: "AUDI_R8_RED",
         name: "Audi R8 V10 Performance",
         color: "Gloss Red",
         hp: "602 hp",
@@ -262,8 +271,8 @@
         specs: "6.75L Twin-Turbo V12 luxury cruiser",
         img: "https://images.unsplash.com/photo-1563720223185-11003d516935?w=500"
       },
-      "BMW_M8": {
-        id: "BMW_M8",
+      "BMW_M8_WHITE": {
+        id: "BMW_M8_WHITE",
         name: "BMW M8 Competition Coupe",
         color: "Alpine White",
         hp: "617 hp",
@@ -295,7 +304,7 @@
 
     function getAllCars() {
       let savedCars = JSON.parse(localStorage.getItem("all_vault_cars") || "null");
-      if (!savedCars || !savedCars["AUDI_R8"] || !savedCars["MERCEDES_CYAN"]) {
+      if (!savedCars || !savedCars["AUDI_R8_RED"] || !savedCars["MERCEDES_CYAN"]) {
         localStorage.setItem("all_vault_cars", JSON.stringify(defaultCars));
         return defaultCars;
       }
@@ -420,59 +429,19 @@
       showModal(carData);
     }
 
-    // Precision Color Signature Matcher for Uploaded Photos
-    function precisionCarRecognition(event) {
+    function handleExactUpload(event) {
       const file = event.target.files[0];
       if (!file) return;
 
       const objectUrl = URL.createObjectURL(file);
-      document.getElementById("aiStatus").innerText = "Analyzing precise car signature...";
+      const selectedKey = document.getElementById("exactCarSelector").value;
+      const cars = getAllCars();
+      
+      let matchedCar = { ...cars[selectedKey] };
+      matchedCar.img = objectUrl; // Displays your uploaded picture with 100% accurate corresponding car name and color!
 
-      const img = new Image();
-      img.src = objectUrl;
-      img.onload = () => {
-        const canvas = document.createElement("canvas");
-        const ctx = canvas.getContext("2d");
-        canvas.width = 60;
-        canvas.height = 60;
-        ctx.drawImage(img, 0, 0, 60, 60);
-
-        const pData = ctx.getImageData(10, 10, 40, 40).data;
-        let r = 0, g = 0, b = 0, count = 0;
-        for (let i = 0; i < pData.length; i += 4) {
-          r += pData[i];
-          g += pData[i+1];
-          b += pData[i+2];
-          count++;
-        }
-        r = Math.floor(r / count);
-        g = Math.floor(g / count);
-        b = Math.floor(b / count);
-
-        const cars = getAllCars();
-        let matchedKey = "MERCEDES_GRAY";
-
-        // Precise color signature matching your exact uploaded photos
-        if (r > 150 && g < 70 && b < 70) {
-          matchedKey = "AUDI_R8"; // Red Audi R8[span_6](start_span)[span_6](end_span)
-        } else if (b > r + 20 && g > r) {
-          matchedKey = "MERCEDES_CYAN"; // Cyan Light Blue Mercedes[span_7](start_span)[span_7](end_span)
-        } else if (r < 50 && g < 50 && b < 50) {
-          matchedKey = "ROLLS_ROYCE"; // Black Rolls-Royce[span_8](start_span)[span_8](end_span)
-        } else if (r > 180 && g > 180 && b > 180) {
-          matchedKey = "BMW_M8"; // White BMW[span_9](start_span)[span_9](end_span)
-        } else if (r > 150 && g > 120 && b < 70) {
-          matchedKey = "MERCEDES_YELLOW"; // Yellow Mercedes[span_10](start_span)[span_10](end_span)
-        } else {
-          matchedKey = "MERCEDES_GRAY"; // Gray Mercedes[span_11](start_span)[span_11](end_span)
-        }
-
-        let matchedCar = { ...cars[matchedKey] };
-        matchedCar.img = objectUrl; // Displays your uploaded photo with the 100% accurate name and color
-
-        document.getElementById("aiStatus").innerText = "Match Confirmed!";
-        showModal(matchedCar);
-      };
+      document.getElementById("aiStatus").innerText = "Exact Match Loaded!";
+      showModal(matchedCar);
     }
 
     function showModal(carData) {
@@ -487,6 +456,7 @@
     }
 
     function closeModal() {
+      document.getElementById("modalModal")?.style ? (document.getElementById("carModal").style.display = "none") : null;
       document.getElementById("carModal").style.display = "none";
       if (document.getElementById('scannerSection').classList.contains('active')) {
         startScanner();
