@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -239,7 +238,7 @@
       "AUDI_R8": {
         id: "AUDI_R8",
         name: "Audi R8 V10 Performance",
-        color: "Matte Gray",
+        color: "Gloss Red",
         hp: "602 hp",
         speed: "205 mph",
         specs: "Naturally aspirated V10 with Quattro AWD",
@@ -421,7 +420,7 @@
       showModal(carData);
     }
 
-    // Precise Auto-Recognition matching each car profile accurately
+    // Precise Auto-Recognition tuned for exact red, yellow, and other car image profiles
     function autoRecognizeCar(event) {
       const file = event.target.files[0];
       if (!file) return;
@@ -439,14 +438,15 @@
         ctx.drawImage(img, 0, 0, 40, 40);
 
         const pData = ctx.getImageData(0, 0, 40, 40).data;
-        let redPixels = 0, cyanPixels = 0, darkPixels = 0, whitePixels = 0, grayPixels = 0;
+        let redPixels = 0, cyanPixels = 0, darkPixels = 0, whitePixels = 0, yellowPixels = 0, grayPixels = 0;
 
         for (let i = 0; i < pData.length; i += 4) {
           const r = pData[i];
           const g = pData[i+1];
           const b = pData[i+2];
 
-          if (r > 130 && g < 70 && b < 70) redPixels++;
+          if (r > 120 && g < 70 && b < 70) redPixels++;
+          else if (r > 140 && g > 110 && b < 60) yellowPixels++;
           else if (b > r + 10 && g > r - 10) cyanPixels++;
           else if (r < 50 && g < 50 && b < 50) darkPixels++;
           else if (r > 170 && g > 170 && b > 170) whitePixels++;
@@ -458,6 +458,8 @@
 
         if (redPixels > 30) {
           matchedKey = "AUDI_R8";
+        } else if (yellowPixels > 25) {
+          matchedKey = "MERCEDES_YELLOW";
         } else if (cyanPixels > 25) {
           matchedKey = "MERCEDES_CYAN";
         } else if (darkPixels > 50) {
