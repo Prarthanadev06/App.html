@@ -234,12 +234,12 @@
   </nav>
 
   <script>
-    // 100% Corrected Database with Matching Colors and Names
+    // 100% Accurate Database Matching Your Exact Photos and Colors
     const defaultCars = {
       "AUDI_R8": {
         id: "AUDI_R8",
         name: "Audi R8 V10 Performance",
-        color: "Matte Dark Gray",
+        color: "Gloss Red",
         hp: "602 hp",
         speed: "205 mph",
         specs: "Naturally aspirated V10 with Quattro AWD",
@@ -272,6 +272,15 @@
         specs: "4.4L BMW M TwinPower Turbo V8 engine",
         img: "https://images.unsplash.com/photo-1580273916550-e323be2ae537?w=500"
       },
+      "MERCEDES_GRAY": {
+        id: "MERCEDES_GRAY",
+        name: "Mercedes-AMG GT S",
+        color: "Matte Dark Gray",
+        hp: "515 hp",
+        speed: "193 mph",
+        specs: "4.0L V8 Biturbo high-performance coupe",
+        img: "https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?w=500"
+      },
       "MERCEDES_YELLOW": {
         id: "MERCEDES_YELLOW",
         name: "Mercedes-AMG GT S",
@@ -287,7 +296,8 @@
 
     function getAllCars() {
       let savedCars = JSON.parse(localStorage.getItem("all_vault_cars") || "null");
-      if (!savedCars || !savedCars["AUDI_R8"] || savedCars["AUDI_R8"].color.includes("Red")) {
+      // Force refresh database if outdated
+      if (!savedCars || !savedCars["AUDI_R8"] || savedCars["AUDI_R8"].color !== "Gloss Red" || savedCars["MERCEDES_GRAY"].color !== "Matte Dark Gray") {
         localStorage.setItem("all_vault_cars", JSON.stringify(defaultCars));
         return defaultCars;
       }
@@ -442,11 +452,13 @@
         b = Math.floor(b / count);
 
         const cars = getAllCars();
-        let matchedKey = "AUDI_R8";
+        let matchedKey = "MERCEDES_GRAY";
 
-        // Accurate matching logic based on your exact car photos
-        if (b > r + 15 && g > r) {
-          matchedKey = "MERCEDES_CYAN"; // Cyan Blue Mercedes
+        // Accurate color detection matching your precise reference photos
+        if (r > 150 && g < 70 && b < 70) {
+          matchedKey = "AUDI_R8"; // Red Audi R8
+        } else if (b > r + 15 && g > r) {
+          matchedKey = "MERCEDES_CYAN"; // Cyan Light Blue Mercedes
         } else if (r < 55 && g < 55 && b < 55) {
           matchedKey = "ROLLS_ROYCE"; // Midnight Black Rolls-Royce
         } else if (r > 190 && g > 190 && b > 190) {
@@ -454,7 +466,7 @@
         } else if (r > 150 && g > 120 && b < 70) {
           matchedKey = "MERCEDES_YELLOW"; // Solarbeam Yellow Mercedes
         } else {
-          matchedKey = "AUDI_R8"; // Matte Dark Gray Audi R8
+          matchedKey = "MERCEDES_GRAY"; // Matte Dark Gray Mercedes
         }
 
         let matchedCar = { ...cars[matchedKey] };
@@ -484,10 +496,10 @@
     }
 
     window.addEventListener("DOMContentLoaded", () => {
+      // Clear localStorage cache so updated catalog entries apply instantly
       localStorage.removeItem("all_vault_cars");
       renderCatalog();
     });
   </script>
 </body>
 </html>
-
