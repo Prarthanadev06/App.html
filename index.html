@@ -1,4 +1,5 @@
-<!DOCTYPE html> 
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -238,7 +239,7 @@
       "AUDI_R8": {
         id: "AUDI_R8",
         name: "Audi R8 V10 Performance",
-        color: "Gloss Red",
+        color: "Matte Gray",
         hp: "602 hp",
         speed: "205 mph",
         specs: "Naturally aspirated V10 with Quattro AWD",
@@ -420,7 +421,7 @@
       showModal(carData);
     }
 
-    // Bulletproof Auto-Recognition mapped specifically to each exact target image
+    // Precise Auto-Recognition matching each car profile accurately
     function autoRecognizeCar(event) {
       const file = event.target.files[0];
       if (!file) return;
@@ -433,47 +434,37 @@
       img.onload = () => {
         const canvas = document.createElement("canvas");
         const ctx = canvas.getContext("2d");
-        canvas.width = 50;
-        canvas.height = 50;
-        ctx.drawImage(img, 0, 0, 50, 50);
+        canvas.width = 40;
+        canvas.height = 40;
+        ctx.drawImage(img, 0, 0, 40, 40);
 
-        const pData = ctx.getImageData(0, 0, 50, 50).data;
-        let rSum = 0, gSum = 0, bSum = 0;
-        let redCount = 0, cyanCount = 0, darkCount = 0, whiteCount = 0, yellowCount = 0, grayCount = 0;
+        const pData = ctx.getImageData(0, 0, 40, 40).data;
+        let redPixels = 0, cyanPixels = 0, darkPixels = 0, whitePixels = 0, grayPixels = 0;
 
         for (let i = 0; i < pData.length; i += 4) {
           const r = pData[i];
           const g = pData[i+1];
           const b = pData[i+2];
-          rSum += r; gSum += g; bSum += b;
 
-          if (r > 120 && g < 70 && b < 70) redCount++;
-          else if (b > r + 15 && g > 80) cyanCount++;
-          else if (r < 45 && g < 45 && b < 45) darkCount++;
-          else if (r > 170 && g > 170 && b > 170) whiteCount++;
-          else if (r > 140 && g > 110 && b < 60) yellowCount++;
-          else if (r >= 70 && r <= 150 && g >= 70 && g <= 150 && b >= 70 && b <= 150 && Math.abs(r - g) < 20 && Math.abs(g - b) < 20) grayCount++;
+          if (r > 130 && g < 70 && b < 70) redPixels++;
+          else if (b > r + 10 && g > r - 10) cyanPixels++;
+          else if (r < 50 && g < 50 && b < 50) darkPixels++;
+          else if (r > 170 && g > 170 && b > 170) whitePixels++;
+          else if (r >= 70 && r <= 160 && g >= 70 && g <= 160 && b >= 70 && b <= 160 && Math.abs(r - g) < 20 && Math.abs(g - b) < 20) grayPixels++;
         }
-
-        const count = pData.length / 4;
-        const avgR = rSum / count;
-        const avgG = gSum / count;
-        const avgB = bSum / count;
 
         const cars = getAllCars();
         let matchedKey = "MERCEDES_GRAY";
 
-        if (redCount > 35 || (avgR > avgG + 25 && avgR > avgB + 25)) {
+        if (redPixels > 30) {
           matchedKey = "AUDI_R8";
-        } else if (yellowCount > 25) {
-          matchedKey = "MERCEDES_YELLOW";
-        } else if (cyanCount > 25 || (avgB > avgR + 15)) {
+        } else if (cyanPixels > 25) {
           matchedKey = "MERCEDES_CYAN";
-        } else if (darkCount > 60 || (avgR < 50 && avgG < 50 && avgB < 50)) {
+        } else if (darkPixels > 50) {
           matchedKey = "ROLLS_ROYCE";
-        } else if (whiteCount > 60 || (avgR > 160 && avgG > 160 && avgB > 160)) {
+        } else if (whitePixels > 60) {
           matchedKey = "BMW_M8";
-        } else if (grayCount > 50) {
+        } else if (grayPixels > 40) {
           matchedKey = "MERCEDES_GRAY";
         } else {
           matchedKey = "MERCEDES_GRAY";
