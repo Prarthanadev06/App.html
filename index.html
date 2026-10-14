@@ -406,7 +406,7 @@
     }
 
     // =========================================================================
-    // UPLOAD & AI RECOGNITION SECTION (Corrected White BMW M8 Mapping)
+    // UPLOAD & AI RECOGNITION SECTION (Configured with Rolls-Royce Wraith Profile)
     // =========================================================================
     function autoRecognizeCar(event) {
       const file = event.target.files[0];
@@ -481,8 +481,14 @@
             break;
           case "RR":
             matchedKey = "ROLLS_ROYCE_WHITE";
-            matchedCar = { ...cars[matchedKey] };
-            matchedCar.color = "Midnight Black";
+            matchedCar = {
+              id: "ROLLS_ROYCE_WHITE",
+              name: "Rolls-Royce Wraith",
+              color: "White",
+              hp: "624 hp",
+              speed: "155 mph",
+              specs: "6.6L Twin-Turbo V12 luxury coupe"
+            };
             break;
           case "MERCEDES_CYAN":
             matchedKey = "MERCEDES_CYAN";
